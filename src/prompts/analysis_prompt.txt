@@ -1,0 +1,12 @@
+Analiza el siguiente evento de lluvia en una parcela de olivar:
+
+DATOS:
+{data}
+
+Instrucciones:
+
+- analiza cada variable (lluvia, pendiente, suelo, manejo)
+- usa los resultados de modelos si están disponibles
+- razona paso a paso antes de concluir
+
+Sigue estrictamente la estructura definida.

@@ -1,0 +1,20 @@
+openai>=1.12.0
+python-dotenv>=1.0.0
+pandas>=2.2.0
+requests>=2.31.0
+tqdm>=4.66.0
+pypdf>=4.0.0
+tenacity>=8.2.3
+
+# científico
+numpy>=1.26.0
+
+# validación
+jsonschema>=4.0.0
+
+# logging
+loguru>=0.7.0
+
+# geoespacial
+shapely>=2.0.0
+geopandas>=0.14.0
