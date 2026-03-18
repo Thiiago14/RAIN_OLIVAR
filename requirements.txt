@@ -5,9 +5,11 @@ requests>=2.31.0
 tqdm>=4.66.0
 pypdf>=4.0.0
 tenacity>=8.2.3
+fpdf>=1.7.2
 
 # científico
 numpy>=1.26.0
+scikit-learn>=1.4.0
 
 # validación
 jsonschema>=4.0.0
@@ -18,3 +20,6 @@ loguru>=0.7.0
 # geoespacial
 shapely>=2.0.0
 geopandas>=0.14.0
+
+matplotlib>=3.8.0
+seaborn>=0.13.0

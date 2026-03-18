@@ -3,9 +3,7 @@ import json
 from src.utils.llm_client import get_llm_client
 from src.utils.prompts_loader import load_txt
 
-
 class OlivarAgent:
-
     def __init__(self, model: str):
         self.client = get_llm_client(model)
         self.model = model
@@ -15,13 +13,18 @@ class OlivarAgent:
         self.prompt_template = load_txt("prompts/analysis_prompt.txt")
 
     def build_prompt(self, data: dict) -> str:
-        return self.prompt_template.replace(
-            "{data}",
-            json.dumps(data, indent=2)
-        )
+        prompt = self.prompt_template
+
+        # Reemplazo del bloque de datos
+        prompt = prompt.replace("{data}", json.dumps(data, indent=2))
+        
+        # Reemplazos explícitos
+        prompt = prompt.replace("{pct_perdida_pred}", str(data.get("pct_perdida_pred", "")))
+        prompt = prompt.replace("{impacto_eur_ha_pred}", str(data.get("impacto_eur_ha_pred", "")))
+
+        return prompt
 
     def analyze(self, data: dict) -> str:
-
         prompt = self.build_prompt(data)
 
         messages = [

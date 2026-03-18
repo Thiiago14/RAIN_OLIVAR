@@ -1,12 +1,45 @@
-Analiza el siguiente evento de lluvia en una parcela de olivar:
+Analiza el siguiente evento de lluvia en una parcela de olivar.
 
-DATOS:
+DATOS DE LA PARCELA:
 {data}
 
-Instrucciones:
+RESULTADOS DEL MODELO:
+- Pérdida estimada (%): {pct_perdida_pred}
+- Impacto económico estimado (€/ha): {impacto_eur_ha_pred}
 
-- analiza cada variable (lluvia, pendiente, suelo, manejo)
-- usa los resultados de modelos si están disponibles
-- razona paso a paso antes de concluir
+INSTRUCCIONES:
+- Usa SIEMPRE los datos proporcionados
+- No inventes valores
+- Relaciona clima, suelo y manejo
+- Basa tus conclusiones en lógica agronómica
 
-Sigue estrictamente la estructura definida.
+FORMATO OBLIGATORIO:
+
+1. EVALUACIÓN AGRONÓMICA
+Descripción breve del estado de la parcela.
+
+2. RIESGOS DETECTADOS
+Principales riesgos (encharcamiento, erosión, estrés radicular, etc.).
+
+3. ESTIMACIÓN DE PÉRDIDA
+Interpretación de la pérdida estimada (%).
+
+4. IMPACTO ECONÓMICO
+Interpretación del impacto en €/ha.
+
+5. RECOMENDACIONES TÉCNICAS
+Acciones concretas para mitigar el impacto.
+
+6. ACCIÓN AUTOMÁTICA SUGERIDA
+(Una acción prioritaria clara)
+
+7. NIVEL DE RIESGO
+
+Basándote en el valor de pérdida estimada ({pct_perdida_pred}), clasifica el nivel de riesgo:
+
+- bajo: <5%
+- medio: 5–15%
+- alto: 15–30%
+- muy alto: >30%
+
+Responde SOLO con una de estas categorías: bajo, medio, alto o muy alto.

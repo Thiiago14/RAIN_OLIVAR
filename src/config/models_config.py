@@ -43,5 +43,5 @@ MODELS = {
 }
 
 # Defaults por agente
-DEFAULT_OLIVAR_MODEL = "gpt-5.2"
+DEFAULT_OLIVAR_MODEL = "gpt-4o-mini"
 
