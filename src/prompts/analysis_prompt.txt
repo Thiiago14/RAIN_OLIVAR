@@ -1,5 +1,8 @@
 Analiza el siguiente evento de lluvia en una parcela de olivar.
 
+CONOCIMIENTO AGRONÓMICO RELEVANTE: Usa esta información para fundamentar tus recomendaciones.
+{knowledge}
+
 DATOS DE LA PARCELA:
 {data}
 
