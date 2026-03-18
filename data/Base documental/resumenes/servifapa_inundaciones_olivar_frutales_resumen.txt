@@ -1,0 +1,62 @@
+==============================================================
+RESUMEN AGRONÓMICO
+Documento : servifapa_inundaciones_olivar_frutales.pdf
+Modelo    : gpt-4o-mini
+Tokens    : 8734
+==============================================================
+
+### RESUMEN ESTRUCTURADO SOBRE OLIVAR Y LLUVIAS EXTREMAS
+
+1. **CARACTERIZACIÓN DE LA PARCELA / ZONA DE ESTUDIO**
+   - Variedad de olivar: Lechín de Sevilla (resistente a asfixia).
+   - Tipo de suelo: Textura fina (arcillosos y limosos).
+
+2. **CARACTERIZACIÓN DEL EVENTO DE LLUVIA EXTREMA**
+   - Precipitación (mm): [NO DISPONIBLE].
+   - Intensidad (mm/h): [NO DISPONIBLE].
+   - Duración (h/días): [NO DISPONIBLE].
+   - Encharcamiento (h/días): [NO DISPONIBLE].
+   - Período de retorno (años): [NO DISPONIBLE].
+   - Escorrentía (m³/ha): [NO DISPONIBLE].
+
+3. **EVALUACIÓN AGRONÓMICA DEL IMPACTO**
+   3.1 **A NIVEL GENERAL**
+   - Síntomas en el árbol: Decaimiento general, clorosis, necrosis de hojas y brotes, asfixia radicular, inclinación, arranque del árbol, daños por enfermedades del suelo.
+   
+   3.2 **A NIVEL DE PARCELA**
+   - Superficie afectada (ha o %): [NO DISPONIBLE].
+   - Erosión (t/ha): [NO DISPONIBLE].
+
+4. **RIESGOS DETECTADOS**
+   - Tipo de riesgo: Erosión, asfixia radicular, incidencia de enfermedades del suelo.
+   - Enfermedades favorecidas: Verticilosis, podredumbre radicular (Phytophthora spp., Fusarium spp., Armillaria spp., Pythium spp.).
+
+5. **ESTIMACIÓN DE PÉRDIDA DE RENDIMIENTO**
+   - % pérdida de cosecha: [NO DISPONIBLE].
+   - Producción esperada vs. real (kg/ha): [NO DISPONIBLE].
+
+6. **IMPACTO ECONÓMICO ESTIMADO**
+   - Impacto económico (€/ha): [NO DISPONIBLE].
+
+7. **VARIABLES Y PARÁMETROS CUANTITATIVOS CLAVE** (tabla)
+   - [NO DISPONIBLE].
+
+8. **RECOMENDACIONES TÉCNICAS**
+   - Medida técnica: Diseño de plantación en terrazas, curvas de nivel, o calles perpendiculares a la pendiente.
+     - Objetivo: Evitar daños por erosión y asfixia radicular.
+   - Medida técnica: Plantación en caballón.
+     - Objetivo: Mejorar aireación y disminuir encharcamiento.
+   - Medida técnica: Evacuación de agua embalsada.
+     - Objetivo: Prevenir asfixia radicular.
+   - Medida técnica: Tratamientos fungicidas.
+     - Objetivo: Controlar enfermedades.
+   - Medida técnica: Uso de drones para tratamientos.
+     - Objetivo: Facilitar aplicaciones en condiciones de humedad.
+
+9. **CONCEPTOS Y MODELOS TÉCNICOS CITADOS**
+   - Índices: [NO DISPONIBLE].
+   - Ecuaciones: [NO DISPONIBLE].
+   - Modelos o valores numéricos clave: [NO DISPONIBLE].
+
+10. **SÍNTESIS PARA EL MODELO PREDICTIVO**
+    - [NO DISPONIBLE].

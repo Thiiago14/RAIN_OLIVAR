@@ -1,0 +1,57 @@
+==============================================================
+RESUMEN AGRONÓMICO
+Documento : tecnicoars,+Ars+Pharm+13(5-8)_145-157.pdf
+Modelo    : gpt-4o-mini
+Tokens    : 12227
+==============================================================
+
+### RESUMEN ESTRUCTURADO SOBRE OLIVAR Y LLUVIAS EXTREMAS
+
+1. **CARACTERIZACIÓN DE LA PARCELA / ZONA DE ESTUDIO**
+   - Localización: Provincia de Granada, incluyendo Loja, Vega, NE de la provincia (Guadix, Baza, Huéscar), Marquesado, Valle de Legrín, Las Alpujarras, Costa, Zafarraya.
+   - Variedad de olivar: Olea Europea, más de 40 razas o clones.
+   - Tipo de suelo: Preferentemente calizo, poco exigente; suelos pardos, pardos-calizos, litosuelos, rendzinas, suelos pardos calizos superficiales.
+   - Pendiente (%): [NO DISPONIBLE]
+   - Densidad: [NO DISPONIBLE]
+
+2. **CARACTERIZACIÓN DEL EVENTO DE LLUVIA EXTREMA**
+   - Precipitación (mm): 250 a 800 mm anuales.
+   - Intensidad (mm/h): [NO DISPONIBLE].
+   - Duración (h/días): [NO DISPONIBLE].
+   - Encharcamiento (h/días): [NO DISPONIBLE].
+   - Período de retorno (años): [NO DISPONIBLE].
+   - Escorrentía (m³/ha): [NO DISPONIBLE].
+
+3. **EVALUACIÓN AGRONÓMICA DEL IMPACTO**
+   3.1 **A NIVEL GENERAL**
+   - Síntomas en el árbol: Paro vegetativo, parquedad de la cosecha.
+   3.2 **A NIVEL DE PARCELA**
+   - Superficie afectada (ha o %): [NO DISPONIBLE].
+   - Erosión (t/ha): [NO DISPONIBLE].
+
+4. **RIESGOS DETECTADOS**
+   - Tipo de riesgo: Déficit hídrico, escasez de agua.
+   - Nivel: [NO DISPONIBLE].
+   - Enfermedades favorecidas: [NO DISPONIBLE].
+
+5. **ESTIMACIÓN DE PÉRDIDA DE RENDIMIENTO**
+   - % pérdida de cosecha: [NO DISPONIBLE].
+   - Producción esperada vs. real (kg/ha): [NO DISPONIBLE].
+
+6. **IMPACTO ECONÓMICO ESTIMADO**
+   - Impacto económico (€/ha): [NO DISPONIBLE].
+
+7. **VARIABLES Y PARÁMETROS CUANTITATIVOS CLAVE** (tabla)
+   - ETP (evapotranspiración potencial): entre 57 y 85,3, según la zona; ETP adicional: 71,2 a 85,3.
+
+8. **RECOMENDACIONES TÉCNICAS**
+   - Medida técnica: [NO DISPONIBLE].
+   - Objetivo: [NO DISPONIBLE].
+   - Plazo: [NO DISPONIBLE].
+   - Coste (€/ha): [NO DISPONIBLE].
+
+9. **CONCEPTOS Y MODELOS TÉCNICOS CITADOS**
+   - Índices: Índice de Meyer, índices de Martonne, Cereceda-Reyenga, Lang, Thornthwaite.
+
+10. **SÍNTESIS PARA EL MODELO PREDICTIVO**
+    - [NO DISPONIBLE EN EL DOCUMENTO].

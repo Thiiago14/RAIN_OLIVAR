@@ -1,0 +1,74 @@
+==============================================================
+RESUMEN AGRONÓMICO
+Documento : guiaolivar--2-.pdf
+Modelo    : gpt-4o-mini
+Tokens    : 104450
+==============================================================
+
+### RESUMEN ESTRUCTURADO SOBRE OLIVAR Y LLUVIAS EXTREMAS
+
+1. **CARACTERIZACIÓN DE LA PARCELA / ZONA DE ESTUDIO**
+   - Localización: [NO DISPONIBLE]
+   - Variedad de olivar: Arbequina, Frantoio, Empeltre, Changlot real.
+   - Pendiente (%): [NO DISPONIBLE]
+   - Tipo de suelo: [NO DISPONIBLE]
+   - Densidad: [NO DISPONIBLE]
+
+2. **CARACTERIZACIÓN DEL EVENTO DE LLUVIA EXTREMA**
+   - Precipitación (mm): [NO DISPONIBLE]
+   - Intensidad (mm/h): [NO DISPONIBLE]
+   - Duración (h/días): [NO DISPONIBLE]
+   - Encharcamiento (h/días): [NO DISPONIBLE]
+   - Período de retorno (años): [NO DISPONIBLE]
+   - Escorrentía (m³/ha): [NO DISPONIBLE]
+
+3. **EVALUACIÓN AGRONÓMICA DEL IMPACTO**
+   3.1 **A NIVEL GENERAL**
+   - Síntomas en el árbol: Decaimiento vegetativo, debilitamiento, daños por cochinilla, deformaciones y retraso de crecimiento en plantas jóvenes, manchas circulares en hojas, podredumbre del fruto.
+   3.2 **A NIVEL DE PARCELA**
+   - Superficie afectada (ha o %): [NO DISPONIBLE]
+   - Erosión (t/ha): [NO DISPONIBLE]
+
+4. **RIESGOS DETECTADOS**
+   - Tipo de riesgo: Plagas (cigarra, gusanos blancos, Zeuzera, cochinilla de la tizne, antracnosis, glifodes, barrenillo negro, polilla del olivo).
+   - Nivel: [NO DISPONIBLE]
+   - Enfermedades favorecidas: Verticilosis, Repilo, Emplomado, Lepra, Tuberculosis, Negrilla, Antracnosis.
+
+5. **ESTIMACIÓN DE PÉRDIDA DE RENDIMIENTO**
+   - % pérdida de cosecha: Más del 5% de brotes afectados por galerías nutricias, defoliación, debilitamiento, caída prematura de frutos, pérdida de calidad del aceite.
+   - Producción esperada vs. real (kg/ha): [NO DISPONIBLE]
+
+6. **IMPACTO ECONÓMICO ESTIMADO**
+   - Impacto económico (€/ha): [NO DISPONIBLE]
+
+7. **VARIABLES Y PARÁMETROS CUANTITATIVOS CLAVE** (tabla)
+   - Porcentaje de brotes atacados = (Nº de brotes atacados / Nº de brotes observados) por 100.
+   - Temperaturas óptimas para el hongo: 15-20 ºC (Repilo), 21-22,5 ºC (Emplomado).
+   - Humedad necesaria: por encima del 90% para infecciones.
+
+8. **RECOMENDACIONES TÉCNICAS**
+   - Medida técnica: Contratación de la figura del asesor.
+     - Objetivo: Racionalización de los tratamientos.
+   - Medida técnica: Inspecciones de maquinaria cada 2 años.
+   - Medida técnica: Utilización de boquillas antideriva.
+   - Medida técnica: Fomento de gestión de residuos.
+   - Medida técnica: Establecimiento de bandas de seguridad.
+   - Medida técnica: Uso de productos fitosanitarios no peligrosos.
+   - Medida técnica: Establecimiento de áreas de compensación ecológica.
+     - Objetivo: Favorecer fauna y flora silvestre.
+   - Medida técnica: Minimizar aplicación directa de fitosanitarios.
+     - Objetivo: Reducir riesgos de contaminación difusa.
+   - Medida técnica: Guardar adecuadamente las leñas de poda.
+     - Objetivo: Prevenir la propagación de enfermedades.
+   - Medida técnica: Uso de medios biológicos y fitosanitarios autorizados.
+     - Objetivo: Control de plagas.
+   - Medida técnica: Podas para favorecer la aireación, uso de variedades resistentes, eliminación de hojas caídas.
+     - Objetivo: Prevenir enfermedades y mejorar la salud del árbol.
+
+9. **CONCEPTOS Y MODELOS TÉCNICOS CITADOS**
+   - Índices: I = ∑ 2(PE) + ∑ VU + RN + 5 (AG) para la Península y Baleares; I = ∑ 2(PE) + ∑ VU + RN + 10 (AG) para Canarias.
+   - Ecuaciones: [NO DISPONIBLE]
+   - Modelos o valores numéricos clave: [NO DISPONIBLE]
+
+10. **SÍNTESIS PARA EL MODELO PREDICTIVO**
+   - [NO DISPONIBLE EN EL DOCUMENTO]

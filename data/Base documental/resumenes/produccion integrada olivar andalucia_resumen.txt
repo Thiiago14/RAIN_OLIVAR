@@ -1,0 +1,77 @@
+==============================================================
+RESUMEN AGRONÓMICO
+Documento : produccion integrada olivar andalucia.pdf
+Modelo    : gpt-4o-mini
+Tokens    : 73546
+==============================================================
+
+### RESUMEN ESTRUCTURADO SOBRE OLIVAR Y LLUVIAS EXTREMAS
+
+1. **CARACTERIZACIÓN DE LA PARCELA / ZONA DE ESTUDIO**
+   - Localización: Andalucía [NO DISPONIBLE]
+   - Variedad de olivar: Mesa, Almazara
+   - Pendiente (%): superior al 8% [NO DISPONIBLE]
+   - Tipo de suelo: Profundidad de 60 cm al material impermeable, 45 cm a la arena o grava y 25 cm a la caliza permeable; textura media ligera o ligera; pH entre 6,3 y 8,5; PSI menor de 20; porcentaje de carbonatos totales entre 0,5 y 40; porcentaje de caliza activa menor de 20.
+   - Densidad: Entre 200 y 300 pies/ha.
+
+2. **CARACTERIZACIÓN DEL EVENTO DE LLUVIA EXTREMA**
+   - Precipitación (mm): [NO DISPONIBLE]
+   - Intensidad (mm/h): [NO DISPONIBLE]
+   - Duración (h/días): [NO DISPONIBLE]
+   - Encharcamiento (h/días): [NO DISPONIBLE]
+   - Período de retorno (años): [NO DISPONIBLE]
+   - Escorrentía (m³/ha): [NO DISPONIBLE]
+
+3. **EVALUACIÓN AGRONÓMICA DEL IMPACTO**
+   3.1 **A NIVEL GENERAL**
+   - Síntomas en el árbol: [NO DISPONIBLE]
+   - Superficie afectada (ha o %): [NO DISPONIBLE]
+   - Erosión (t/ha): [NO DISPONIBLE]
+   
+   3.2 **A NIVEL DE PARCELA**
+   - Tipo de riesgo: Contaminación por lixiviación o escorrentía
+   - Nivel: [NO DISPONIBLE]
+   - Enfermedades favorecidas: Verticillium.
+
+4. **RIESGOS DETECTADOS**
+   - Tipo de riesgo: Contaminación por lixiviación o escorrentía
+   - Nivel: [NO DISPONIBLE]
+   - Enfermedades favorecidas: Verticillium.
+
+5. **ESTIMACIÓN DE PÉRDIDA DE RENDIMIENTO**
+   - % pérdida de cosecha: [NO DISPONIBLE]
+   - Producción esperada vs. real (kg/ha): [NO DISPONIBLE]
+   - Impacto económico (€/ha): [NO DISPONIBLE]
+
+6. **IMPACTO ECONÓMICO ESTIMADO**
+   - Impacto económico (€/ha): [NO DISPONIBLE]
+
+7. **VARIABLES Y PARÁMETROS CUANTITATIVOS CLAVE** (tabla)
+   - Índices: Coeficiente de eficiencia (E)
+   - Ecuaciones: [NO DISPONIBLE]
+   - Modelos o valores numéricos clave: 
+     - Olivar Mesa Secano: N aplicar 10 kg/Tm, N extraído 0.8 kg/Tm, N otros aportes 3 kg/Tm
+     - Olivar Mesa Regadío: N aplicar 20 kg/Tm, N extraído 0.7 kg/Tm, N otros aportes 15 kg/Tm
+     - Olivar Almazara Secano: N aplicar 20 kg/Tm, N extraído 0.8 kg/Tm, N otros aportes 3 kg/Tm
+     - Olivar Almazara Regadío: N aplicar 25 kg/Tm, N extraído 0.7 kg/Tm, N otros aportes 15 kg/Tm
+
+8. **RECOMENDACIONES TÉCNICAS**
+   - Medida técnica: 
+     - Aplicación de fertilizantes nitrogenados para mantener niveles adecuados de nitrógeno y evitar contaminación.
+     - Utilizar material vegetal exento de plagas, realizar enmiendas orgánicas y minerales, mantener el nivel de materia orgánica, realizar análisis foliares anuales.
+     - Mantener la zona bajo copa sin labrar.
+     - Iniciar la recolección en el momento idóneo en función del previsible periodo de recogida.
+     - Control periódico de la maduración para determinar el momento de recolección de la aceituna.
+   - Objetivo: Asegurar la sanidad y fertilidad del cultivo, buena organización del trabajo.
+   - Plazo: [NO DISPONIBLE]
+   - Coste (€/ha): [NO DISPONIBLE]
+
+9. **CONCEPTOS Y MODELOS TÉCNICOS CITADOS**
+   - Índices: Clasificación agroecológica del clima según PAPADAKIS; valores de pH, PSI, concentración de Boro, cloruros y conductividad eléctrica.
+   - Real Decreto 1201/2002, de 20 de noviembre.
+   - Decreto 245/2003, de 2 de septiembre.
+   - Orden de 13 de diciembre de 2004.
+   - Decreto 268/2003, de 30 de septiembre.
+
+10. **SÍNTESIS PARA EL MODELO PREDICTIVO**
+   - [NO DISPONIBLE]

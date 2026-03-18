@@ -1,0 +1,79 @@
+==============================================================
+RESUMEN AGRONÓMICO
+Documento : 1. Plagas y enferm_olivo_2017 BAJA.pdf
+Modelo    : gpt-4o-mini
+Tokens    : 68398
+==============================================================
+
+### RESUMEN ESTRUCTURADO SOBRE OLIVAR Y LLUVIAS EXTREMAS
+
+1. **CARACTERIZACIÓN DE LA PARCELA / ZONA DE ESTUDIO**
+   - Localización: [NO DISPONIBLE]
+   - Variedad de olivar: [NO DISPONIBLE]
+   - Pendiente (%): [NO DISPONIBLE]
+   - Tipo de suelo: [NO DISPONIBLE]
+   - Densidad: [NO DISPONIBLE]
+
+2. **CARACTERIZACIÓN DEL EVENTO DE LLUVIA EXTREMA**
+   - Precipitación (mm): [NO DISPONIBLE]
+   - Intensidad (mm/h): [NO DISPONIBLE]
+   - Duración (h/días): [NO DISPONIBLE]
+   - Encharcamiento (h/días): [NO DISPONIBLE]
+   - Período de retorno (años): [NO DISPONIBLE]
+   - Escorrentía (m³/ha): [NO DISPONIBLE]
+
+3. **EVALUACIÓN AGRONÓMICA DEL IMPACTO**
+   3.1 **A NIVEL GENERAL**
+   - Síntomas en el árbol: 
+     - Grandes zonas foliares roídas con destrucción total o parcial de los órganos foliares.
+     - Proliferación de yemas axilares, transformación de piezas florales en hojas, amarilleamientos del follaje, enanismo.
+     - Reducción del peso de las aceitunas entre un 10% y un 30%, caída prematura de frutos.
+     - Desecación y caída de órganos fructíferos, perforación de hojas, daños en yemas y frutos.
+     - Alta defoliación, manchas circulares en frutos, deshidratación, caída prematura, aumento de acidez, pésima calidad de los aceites.
+   3.2 **A NIVEL DE PARCELA**
+   - Superficie afectada: [NO DISPONIBLE]
+   - Erosión (t/ha): [NO DISPONIBLE]
+
+4. **RIESGOS DETECTADOS**
+   - Tipo de riesgo: 
+     - Enfermedades bacterianas, virosis, fisiopatías.
+     - Ataque de la mosca del olivo.
+     - Plagas (cochinilla de la tizne, barrenillo, glifodes, otiorrinco, gusanos blancos).
+   - Nivel: [NO DISPONIBLE]
+   - Enfermedades favorecidas: 
+     - Tuberculosis del olivo, mildiu, oidium, negrilla, clorosis.
+     - Repilo, Verticilosis, Aceitunas jabonosas.
+
+5. **ESTIMACIÓN DE PÉRDIDA DE RENDIMIENTO**
+   - % pérdida de cosecha: [NO DISPONIBLE]
+   - Producción esperada vs. real (kg/ha): [NO DISPONIBLE]
+
+6. **IMPACTO ECONÓMICO ESTIMADO**
+   - Impacto económico (€/ha): [NO DISPONIBLE]
+
+7. **VARIABLES Y PARÁMETROS CUANTITATIVOS CLAVE** (tabla)
+   - [NO DISPONIBLE]
+
+8. **RECOMENDACIONES TÉCNICAS**
+   - Medida técnica: 
+     - Utilización de material vegetal sano, obtención de variedades resistentes, prácticas de cultivo adecuadas.
+     - Plan de abonado equilibrado; objetivo: prevenir la llegada de plagas.
+     - Construcción de refugios artificiales; objetivo: disminuir el potencial dañino de la plaga.
+     - Uso de pesticidas químicos, monitorización con trampas; objetivo: controlar la población de la mosca del olivo.
+     - Destrucción de restos de poda, acondicionamiento de leña, colocación de trampas cebo; objetivo: evitar la invasión de barrenillos.
+     - Aplicación de insecticida (Diazinon) para gusanos blancos; objetivo: control de plagas.
+     - Tratamientos preventivos, uso de productos sistémicos; objetivo: controlar enfermedades.
+   - Plazo: [NO DISPONIBLE]
+   - Coste (€/ha): [NO DISPONIBLE]
+
+9. **CONCEPTOS Y MODELOS TÉCNICOS CITADOS**
+   - Umbrales térmicos para la mosca del olivo:
+     - Huevo: 6° C - 34-35° C
+     - Larva: 8° C - 30° C
+     - Pupa: 7-10° C - 36° C
+     - Adulto: 0° C - 40° C
+   - Duración del ciclo: 32-36 días en verano, 134-143 días en invierno.
+   - Formulados para aplicar en Olivo contra plagas: DIMETOATO, carbaril, deltametrin, azufre.
+
+10. **SÍNTESIS PARA EL MODELO PREDICTIVO**
+    - [NO DISPONIBLE]

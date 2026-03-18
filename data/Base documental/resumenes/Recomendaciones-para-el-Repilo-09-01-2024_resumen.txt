@@ -1,0 +1,113 @@
+==============================================================
+RESUMEN AGRONÓMICO
+Documento : Recomendaciones-para-el-Repilo-09-01-2024.pdf
+Modelo    : gpt-4o-mini
+Tokens    : 3191
+==============================================================
+
+================================================================
+1. CARACTERIZACIÓN DE LA PARCELA / ZONA DE ESTUDIO
+================================================================
+- Localización geográfica: [NO DISPONIBLE EN EL DOCUMENTO].
+- Variedad/es de olivar mencionadas: Lechín de Sevilla, Manzanilla de Hellín, Picudo de Montoro.
+- Marco de plantación y densidad: [NO DISPONIBLE EN EL DOCUMENTO].
+- Tipo y textura de suelo: [NO DISPONIBLE EN EL DOCUMENTO].
+- Pendiente media o rango de pendiente: [NO DISPONIBLE EN EL DOCUMENTO].
+- Sistema de manejo del suelo: [NO DISPONIBLE EN EL DOCUMENTO].
+- Estadio fenológico del olivar en el momento del evento: Estado A (yema latente).
+
+================================================================
+2. CARACTERIZACIÓN DEL EVENTO DE LLUVIA EXTREMA
+================================================================
+- Fecha o periodo del evento: [NO DISPONIBLE EN EL DOCUMENTO].
+- Precipitación total acumulada: [NO DISPONIBLE EN EL DOCUMENTO].
+- Intensidad máxima: [NO DISPONIBLE EN EL DOCUMENTO].
+- Duración total del episodio: [NO DISPONIBLE EN EL DOCUMENTO].
+- Duración del encharcamiento o saturación hídrica del suelo: [NO DISPONIBLE EN EL DOCUMENTO].
+- Caudal de escorrentía generado: [NO DISPONIBLE EN EL DOCUMENTO].
+- Comparativa con precipitación media de la zona: [NO DISPONIBLE EN EL DOCUMENTO].
+
+================================================================
+3. EVALUACIÓN AGRONÓMICA DEL IMPACTO
+================================================================
+3.1 A NIVEL GENERAL (zona/comarca):
+- Descripción del impacto observado en el cultivo: Presencia de repilo.
+- Superficie afectada: [NO DISPONIBLE EN EL DOCUMENTO].
+- Síntomas en el árbol: [NO DISPONIBLE EN EL DOCUMENTO].
+
+3.2 A NIVEL DE PARCELA:
+- Daños específicos documentados por parcela o tipo de parcela: [NO DISPONIBLE EN EL DOCUMENTO].
+- Relación entre pendiente/suelo y nivel de daño observado: [NO DISPONIBLE EN EL DOCUMENTO].
+- Erosión, arrastre de suelo o cárcavas generadas: [NO DISPONIBLE EN EL DOCUMENTO].
+
+================================================================
+4. RIESGOS DETECTADOS
+================================================================
+- Tipo de riesgo: Repilo.
+- Nivel de riesgo: [NO DISPONIBLE EN EL DOCUMENTO].
+- Condiciones de suelo/pendiente/manejo que lo agravan: Exceso de abono nitrogenado, falta de aireación.
+- Enfermedades oportunistas favorecidas: Repilo (Agente causal: [NO DISPONIBLE EN EL DOCUMENTO]).
+
+================================================================
+5. ESTIMACIÓN DE PÉRDIDA DE RENDIMIENTO
+================================================================
+- Porcentaje de pérdida de cosecha estimado: [NO DISPONIBLE EN EL DOCUMENTO].
+- Producción esperada sin daño: [NO DISPONIBLE EN EL DOCUMENTO].
+- Producción estimada tras el evento: [NO DISPONIBLE EN EL DOCUMENTO].
+- Método o modelo de estimación utilizado en el documento: [NO DISPONIBLE EN EL DOCUMENTO].
+- Factores que modulan la pérdida: Variedades resistentes, manejo del nitrógeno.
+- Rangos o escenarios de pérdida: [NO DISPONIBLE EN EL DOCUMENTO].
+
+================================================================
+6. IMPACTO ECONÓMICO ESTIMADO
+================================================================
+- Precio de mercado del aceite o aceituna citado: [NO DISPONIBLE EN EL DOCUMENTO].
+- Pérdida económica estimada: [NO DISPONIBLE EN EL DOCUMENTO].
+- Pérdida económica media en el conjunto de parcelas evaluadas: [NO DISPONIBLE EN EL DOCUMENTO].
+- Costes adicionales de restauración/rehabilitación: [NO DISPONIBLE EN EL DOCUMENTO].
+- Otros costes asociados: [NO DISPONIBLE EN EL DOCUMENTO].
+
+================================================================
+7. VARIABLES Y PARÁMETROS CUANTITATIVOS CLAVE
+================================================================
+| Variable | Valor | Unidad | Fuente/Contexto |
+|----------|-------|--------|------------------|
+| Variedades de olivar | Lechín de Sevilla, Manzanilla de Hellín, Picudo de Montoro | - | Recomendaciones para el control de repilo |
+| Estado fenológico | A (yema latente) | - | Recomendaciones para el control de repilo |
+
+================================================================
+8. RECOMENDACIONES TÉCNICAS
+================================================================
+- Medida técnica propuesta: Podas para favorecer la aireación.
+  - Objetivo agronómico: Mejorar la sequedad de las hojas.
+  - Plazo de aplicación: Inmediato.
+  - Coste orientativo: [NO DISPONIBLE EN EL DOCUMENTO].
+
+- Medida técnica propuesta: No excederse en el abono nitrogenado.
+  - Objetivo agronómico: Reducir el riesgo de repilo.
+  - Plazo de aplicación: Inmediato.
+  - Coste orientativo: [NO DISPONIBLE EN EL DOCUMENTO].
+
+- Medida técnica propuesta: Utilización de variedades resistentes en nuevas plantaciones.
+  - Objetivo agronómico: Reducir la incidencia de repilo.
+  - Plazo de aplicación: Medio plazo.
+  - Coste orientativo: [NO DISPONIBLE EN EL DOCUMENTO].
+
+- Medida técnica propuesta: Uso de productos fitosanitarios autorizados.
+  - Objetivo agronómico: Controlar la infestación de repilo.
+  - Plazo de aplicación: Corto plazo.
+  - Coste orientativo: [NO DISPONIBLE EN EL DOCUMENTO].
+
+================================================================
+9. CONCEPTOS Y MODELOS TÉCNICOS CITADOS
+================================================================
+- Repilo.
+- Medidas culturales.
+- Control químico.
+- Fungicidas orgánicos.
+- Prevención y medidas alternativas al control químico.
+
+================================================================
+10. SÍNTESIS PARA EL MODELO PREDICTIVO
+================================================================
+El documento proporciona recomendaciones para el control del repilo en olivar, destacando la importancia de la poda para mejorar la aireación y la gestión del nitrógeno para prevenir la enfermedad. Se sugiere el uso de variedades resistentes en nuevas plantaciones y la aplicación de productos fitosanitarios autorizados según el grado de infestación. Las medidas culturales deben priorizarse sobre el control químico. La información sobre el impacto específico y las pérdidas económicas no está disponible en el documento, lo que limita la evaluación completa del daño.
