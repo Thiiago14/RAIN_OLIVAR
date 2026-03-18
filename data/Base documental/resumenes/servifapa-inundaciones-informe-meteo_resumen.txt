@@ -1,0 +1,57 @@
+==============================================================
+RESUMEN AGRONÓMICO
+Documento : servifapa-inundaciones-informe-meteo.pdf
+Modelo    : gpt-4o-mini
+Tokens    : 8206
+==============================================================
+
+### RESUMEN ESTRUCTURADO SOBRE OLIVAR Y LLUVIAS EXTREMAS
+
+1. **CARACTERIZACIÓN DE LA PARCELA / ZONA DE ESTUDIO**
+   - Localización: Andalucía (provincias de Huelva, Sevilla, Córdoba, Jaén, Almería, Granada, Málaga, Cádiz).
+   - Variedad de olivar: [NO DISPONIBLE].
+   - Pendiente (%): [NO DISPONIBLE].
+   - Tipo de suelo: [NO DISPONIBLE].
+   - Densidad: [NO DISPONIBLE].
+
+2. **CARACTERIZACIÓN DEL EVENTO DE LLUVIA EXTREMA**
+   - Precipitación (mm): Huelva (611 mm), Sevilla (511 mm), Córdoba (566 mm), Jaén (445 mm), Almería (260 mm), Granada (421 mm), Málaga (437 mm), Estepona (968 mm), Cádiz (645 mm), Córdoba (303 mm).
+   - Intensidad (mm/h): [NO DISPONIBLE].
+   - Duración (h/días): 21 días con precipitaciones significativas.
+   - Encharcamiento (h/días): [NO DISPONIBLE].
+   - Período de retorno (años): [NO DISPONIBLE].
+   - Escorrentía (m³/ha): [NO DISPONIBLE].
+
+3. **EVALUACIÓN AGRONÓMICA DEL IMPACTO**
+   3.1 **A NIVEL GENERAL**
+   - Síntomas en el árbol: Deterioro de la calidad de las cosechas, retrasos en la recolección.
+   3.2 **A NIVEL DE PARCELA**
+   - Superficie afectada (ha o %): [NO DISPONIBLE].
+   - Erosión (t/ha): [NO DISPONIBLE].
+
+4. **RIESGOS DETECTADOS**
+   - Tipo de riesgo: [NO DISPONIBLE].
+   - Nivel (bajo/medio/alto/muy alto): [NO DISPONIBLE].
+   - Enfermedades favorecidas: [NO DISPONIBLE].
+
+5. **ESTIMACIÓN DE PÉRDIDA DE RENDIMIENTO**
+   - % pérdida de cosecha: [NO DISPONIBLE].
+   - Producción esperada vs. real (kg/ha): [NO DISPONIBLE].
+
+6. **IMPACTO ECONÓMICO ESTIMADO**
+   - Impacto económico (€/ha): [NO DISPONIBLE].
+
+7. **VARIABLES Y PARÁMETROS CUANTITATIVOS CLAVE** (tabla)
+   - [NO DISPONIBLE EN EL DOCUMENTO].
+
+8. **RECOMENDACIONES TÉCNICAS**
+   - Medida técnica: [NO DISPONIBLE].
+   - Objetivo: [NO DISPONIBLE].
+   - Plazo: [NO DISPONIBLE].
+   - Coste (€/ha): [NO DISPONIBLE].
+
+9. **CONCEPTOS Y MODELOS TÉCNICOS CITADOS**
+   - Índices, ecuaciones, modelos o valores numéricos clave: [NO DISPONIBLE].
+
+10. **SÍNTESIS PARA EL MODELO PREDICTIVO**
+    - [NO DISPONIBLE EN EL DOCUMENTO].

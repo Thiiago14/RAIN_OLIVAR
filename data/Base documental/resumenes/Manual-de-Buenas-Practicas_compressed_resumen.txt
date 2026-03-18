@@ -1,0 +1,57 @@
+==============================================================
+RESUMEN AGRONÓMICO
+Documento : Manual-de-Buenas-Practicas_compressed.pdf
+Modelo    : gpt-4o-mini
+Tokens    : 9487
+==============================================================
+
+**1. CARACTERIZACIÓN DE LA PARCELA / ZONA DE ESTUDIO**  
+- Localización: [NO DISPONIBLE]  
+- Variedad de olivar: [NO DISPONIBLE]  
+- Pendiente (%): [NO DISPONIBLE]  
+- Tipo de suelo: [NO DISPONIBLE]  
+- Densidad: [NO DISPONIBLE]  
+
+**2. CARACTERIZACIÓN DEL EVENTO DE LLUVIA EXTREMA**  
+- Precipitación (mm): [NO DISPONIBLE]  
+- Intensidad (mm/h): [NO DISPONIBLE]  
+- Duración (h/días): [NO DISPONIBLE]  
+- Encharcamiento (h/días): [NO DISPONIBLE]  
+- Período de retorno (años): [NO DISPONIBLE]  
+- Escorrentía (m³/ha): [NO DISPONIBLE]  
+
+**3. EVALUACIÓN AGRONÓMICA DEL IMPACTO**  
+3.1 A NIVEL GENERAL  
+- Síntomas en el árbol: [NO DISPONIBLE]  
+3.2 A NIVEL DE PARCELA  
+- Superficie afectada (ha o %): [NO DISPONIBLE]  
+- Erosión (t/ha): [NO DISPONIBLE]  
+
+**4. RIESGOS DETECTADOS**  
+- Tipo de riesgo: [NO DISPONIBLE]  
+- Nivel (bajo/medio/alto/muy alto): [NO DISPONIBLE]  
+- Enfermedades favorecidas: [NO DISPONIBLE]  
+
+**5. ESTIMACIÓN DE PÉRDIDA DE RENDIMIENTO**  
+- % pérdida de cosecha: [NO DISPONIBLE]  
+- Producción esperada vs. real (kg/ha): [NO DISPONIBLE]  
+
+**6. IMPACTO ECONÓMICO ESTIMADO**  
+- Impacto económico (€/ha): [NO DISPONIBLE]  
+
+**7. VARIABLES Y PARÁMETROS CUANTITATIVOS CLAVE**  
+- [NO DISPONIBLE EN EL DOCUMENTO]  
+
+**8. RECOMENDACIONES TÉCNICAS**  
+- Medida técnica: Aplicar cubiertas inertes.  
+  - Objetivo: Mejorar la salud del suelo, conservar recursos naturales, aumentar resiliencia.  
+- Medida técnica: Implementación de labranza de conservación.  
+  - Objetivo: Proteger la integridad del suelo y mejorar la sostenibilidad.  
+- Plazo: [NO DISPONIBLE]  
+- Coste (€/ha): [NO DISPONIBLE]  
+
+**9. CONCEPTOS Y MODELOS TÉCNICOS CITADOS**  
+- Índices, ecuaciones, modelos o valores numéricos clave: [NO DISPONIBLE]  
+
+**10. SÍNTESIS PARA EL MODELO PREDICTIVO**  
+- [NO DISPONIBLE EN EL DOCUMENTO]  
