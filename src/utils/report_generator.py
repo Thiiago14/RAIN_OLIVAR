@@ -298,5 +298,15 @@ def generate_pdf_report(
     # ------------------------------------------------------------------
     # GUARDAR
     # ------------------------------------------------------------------
-    pdf.output(output_path)
-    print(f"PDF generado en: {output_path}")
+    try:
+        pdf.output(output_path)
+        print(f"PDF generado en: {output_path}")
+    except PermissionError:
+        base, ext = os.path.splitext(output_path)
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        fallback_path = f"{base}_{ts}{ext}"
+        pdf.output(fallback_path)
+        print(
+            f"AVISO: '{output_path}' está abierto en otro programa.\n"
+            f"PDF guardado en: {fallback_path}"
+        )
