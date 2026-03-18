@@ -22,22 +22,25 @@ def main():
 
     agent = OlivarAgent(model=DEFAULT_OLIVAR_MODEL)
 
+    llm_results = []
+
     for _, row in df.iterrows():
 
         data = row.to_dict()
-        # Asegurar nombres claros
         data["pct_perdida_pred"] = row["pct_perdida_pred"]
         data["impacto_eur_ha_pred"] = row["impacto_eur_ha_pred"]
 
         result = agent.analyze(data)
 
         print("\n============================")
-        print(f"📍 Parcela: {row['parcel_id']}")
+        print(f"Parcela: {row['parcel_id']}")
         print("============================")
         print(result)
 
-        generate_pdf_report(df)
-        print(f" Informe generado")
+        llm_results.append({"parcel_id": row["parcel_id"], "analysis": result})
+
+    generate_pdf_report(df, llm_results=llm_results)
+    print("Informe PDF generado.")
 
 if __name__ == "__main__":
     main()
