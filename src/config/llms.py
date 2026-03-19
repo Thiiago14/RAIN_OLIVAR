@@ -46,6 +46,8 @@ class _ChatCompletions:
             return _gemini_chat_completion(model, messages, temperature)
         if provider == "anthropic":
             return _anthropic_chat_completion(model, messages, temperature)
+        if provider == "glm":
+            return _glm_chat_completion(model, messages, temperature)
         return _openai_chat_completion(model, messages, temperature, self._client.api_key, self._client.base_url)
 
 
@@ -205,3 +207,48 @@ def _anthropic_chat_completion(
         total_tokens=prompt_tokens + completion_tokens,
     )
     return CompletionResponse(choices=[Choice(message=Message(content=content))], usage=usage)
+
+def _glm_chat_completion(
+    model: str,
+    messages: List[Dict[str, Any]],
+    temperature: float,
+) -> CompletionResponse:
+    
+    api_key = os.getenv("GLM_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("GLM_API_KEY no está configurada.")
+
+    url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+
+    response = requests.post(
+        url,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+        },
+        timeout=60,
+    )
+
+    if response.status_code >= 400:
+        raise RuntimeError(f"GLM error {response.status_code}: {response.text}")
+
+    data = response.json()
+
+    content = data["choices"][0]["message"]["content"]
+
+    usage_data = data.get("usage", {})
+    usage = Usage(
+        prompt_tokens=usage_data.get("prompt_tokens", 0),
+        completion_tokens=usage_data.get("completion_tokens", 0),
+        total_tokens=usage_data.get("total_tokens", 0),
+    )
+
+    return CompletionResponse(
+        choices=[Choice(message=Message(content=content))],
+        usage=usage,
+    )

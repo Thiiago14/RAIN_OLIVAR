@@ -40,8 +40,15 @@ MODELS = {
         "price_out": 1.50,
         "description": "Gemini 3 Flash Preview (inteligencia máxima, velocidad, búsqueda y grounding)"
     },
+    "glm-5": {
+        "provider": "glm",
+        "price_in": 0.50,
+        "price_out": 2.00,
+        "description": "GLM-5 (Zhipu AI, fuerte en razonamiento y chino/inglés)"
+    }
+
 }
 
 # Defaults por agente
-DEFAULT_OLIVAR_MODEL = "gpt-4o-mini"
+DEFAULT_OLIVAR_MODEL = "gpt-5.2"
 

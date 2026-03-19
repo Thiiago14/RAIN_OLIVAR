@@ -6,6 +6,7 @@ tqdm>=4.66.0
 pypdf>=4.0.0
 tenacity>=8.2.3
 fpdf>=1.7.2
+paho-mqtt>=1.6.1
 
 # científico
 numpy>=1.26.0
