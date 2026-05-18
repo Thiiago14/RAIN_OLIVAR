@@ -1,15 +1,16 @@
-# 🌿 LLM Rain Olivar
+# LLM Rain Olivar
 
 Sistema inteligente para analizar el impacto de lluvias intensas en parcelas de olivar combinando:
 
-* 📊 Modelos de Machine Learning (predicción de pérdida)
-* 🤖 LLM (análisis agronómico experto)
-* 📚 Base documental (buenas prácticas y recomendaciones)
-* 📄 Generación automática de reportes
+* Modelos de Machine Learning (predicción de pérdida)
+* LLM (análisis agronómico experto)
+* Base documental (buenas prácticas y recomendaciones)
+* Generación automática de reportes
+* Sistema de alertas vía MQTT
 
 ---
 
-## 🚀 ¿Qué hace este proyecto?
+## ¿Qué hace este proyecto?
 
 Dado un dataset de parcelas de olivar:
 
@@ -17,11 +18,12 @@ Dado un dataset de parcelas de olivar:
 2. Calcula el **impacto económico (€ / ha)**
 3. Analiza cada parcela con un **LLM experto**
 4. Usa **conocimiento agronómico real (RAG)**
-5. Genera resultados estructurados y listos para reporte
+5. Publica **alertas automáticas por MQTT**
+6. Genera resultados estructurados y listos para reporte
 
 ---
 
-## ⚙️ Instalación
+## Instalación
 
 ### 1. Clonar repositorio
 
@@ -64,18 +66,22 @@ pip install -r requirements.txt
 
 ### 4. Configurar variables de entorno
 
-Crear archivo `.env`:
+Crear archivo `.env` con las claves del proveedor LLM que se quiera usar:
 
 ```env
 OPENAI_API_KEY=tu_api_key
 GEMINI_API_KEY=tu_api_key
+ANTHROPIC_API_KEY=tu_api_key
+GLM_API_KEY=tu_api_key
 ```
 
-👉 Recomendado: usar **Gemini** para evitar problemas de configuración.
+Solo es necesaria la clave del proveedor seleccionado en `src/config/models_config.py`.
+
+Proveedores soportados: **OpenAI**, **Gemini**, **Anthropic**, **GLM (Zhipu AI)**.
 
 ---
 
-## ▶️ Ejecución
+## Ejecución
 
 ```bash
 python -m main
@@ -83,7 +89,7 @@ python -m main
 
 ---
 
-## 🔄 Pipeline completo
+## Pipeline completo
 
 El sistema ejecuta automáticamente:
 
@@ -130,7 +136,18 @@ Incluye:
 
 ---
 
-## 📂 Estructura del proyecto
+### 5. Alertas MQTT
+
+Tras cada análisis se construye y publica una alerta estructurada en el topic `hackathon/olivia` con:
+
+* Nivel de riesgo (bajo / medio / alto)
+* Riesgos detectados (encharcamiento, erosión)
+* Acción recomendada
+* Impacto económico por hectárea
+
+---
+
+## Estructura del proyecto
 
 ```text
 LLM_RAIN_OLIVAR/
@@ -144,10 +161,14 @@ LLM_RAIN_OLIVAR/
 │   └── modelo_olivar.ipynb    # entrenamiento del modelo
 │
 ├── src/
-│   ├── config/                # configuración de modelos LLM
+│   ├── config/
+│   │   ├── llms.py            # cliente LLM multi-proveedor
+│   │   └── models_config.py   # configuración y selección de modelos
+│   │
 │   ├── features/
 │   │   ├── prediction_perdida.py   # pipeline ML
-│   │   └── resumen_pdfs.py         # generación de resúmenes
+│   │   ├── resumen_pdfs.py         # generación de resúmenes
+│   │   └── build_alert.py          # construcción de alertas MQTT
 │   │
 │   ├── orquestador/
 │   │   └── olivar_agent.py    # agente LLM
@@ -156,9 +177,12 @@ LLM_RAIN_OLIVAR/
 │   ├── roles/                 # rol experto agrónomo
 │   │
 │   ├── utils/
+│   │   ├── data_loader.py     # carga y validación de datos
 │   │   ├── knowledge_base.py  # RAG simple
-│   │   ├── model_loader.py    # carga modelo ML
 │   │   ├── llm_client.py      # cliente LLM
+│   │   ├── model_loader.py    # carga modelo ML
+│   │   ├── mqtt_client.py     # publicación de alertas MQTT
+│   │   ├── prompts_loader.py  # carga de prompts
 │   │   └── report_generator.py # generación PDF
 │
 ├── main.py                    # pipeline principal
@@ -168,7 +192,7 @@ LLM_RAIN_OLIVAR/
 
 ---
 
-## 📊 Input esperado
+## Input esperado
 
 Archivo:
 
@@ -190,7 +214,7 @@ Columnas típicas:
 
 ---
 
-## 📤 Output generado
+## Output generado
 
 ### CSV final
 
@@ -206,7 +230,7 @@ Columnas:
 
 ---
 
-### 🧠 Output LLM (por parcela)
+### Output LLM (por parcela)
 
 Ejemplo:
 
@@ -222,25 +246,39 @@ Ejemplo:
 
 ---
 
-## 🧠 Arquitectura
+### Informe PDF
+
+Se genera automáticamente en:
 
 ```text
-ML Model → Predicción → LLM → RAG → Reporte
+data/output/informe_olivar_<timestamp>.pdf
+```
+
+Incluye el análisis LLM de cada parcela junto con las predicciones del modelo.
+
+---
+
+## Arquitectura
+
+```text
+ML Model → Predicción → LLM → RAG → MQTT Alert → Reporte PDF
 ```
 
 ---
 
-## 🔥 Estado actual
+## Estado actual
 
-* ✔ Pipeline ML completo
-* ✔ Integración con LLM (OpenAI / Gemini)
-* ✔ RAG básico con documentos reales
-* ✔ Generación de recomendaciones agronómicas
-* ✔ Arquitectura modular (features, utils, agent)
+* Pipeline ML completo
+* Integración con LLM multi-proveedor (OpenAI / Gemini / Anthropic / GLM)
+* RAG básico con documentos reales
+* Generación de recomendaciones agronómicas
+* Sistema de alertas MQTT por parcela
+* Generación automática de informes PDF
+* Arquitectura modular (features, utils, agent)
 
 ---
 
-## 🚧 Mejoras futuras
+## Mejoras futuras
 
 * Embeddings + búsqueda semántica (FAISS)
 * Ranking de documentos más relevante
@@ -250,10 +288,10 @@ ML Model → Predicción → LLM → RAG → Reporte
 
 ---
 
-## ⚠️ Notas
+## Notas
 
 * Ejecutar siempre desde la raíz del proyecto
-* Asegurarse de que `.env` está configurado
+* Asegurarse de que `.env` está configurado con la clave del proveedor LLM elegido
 * Verificar que el modelo `.pkl` existe en:
 
 ```text
@@ -269,5 +307,6 @@ Este sistema permite:
 * Anticipar pérdidas en producción
 * Reducir impacto económico
 * Tomar decisiones agronómicas basadas en datos + conocimiento experto
+* Emitir alertas automáticas en tiempo real sobre parcelas en riesgo
 
 ---
