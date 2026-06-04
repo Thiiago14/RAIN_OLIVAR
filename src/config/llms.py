@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List
 
 import requests
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from src.config.models_config import MODELS
 
@@ -68,6 +69,12 @@ def _provider_for_model(model: str) -> str:
     return info.get("provider", "openai")
 
 
+@retry(
+    retry=retry_if_exception_type(requests.exceptions.Timeout),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=2, min=4, max=30),
+    reraise=True,
+)
 def _openai_chat_completion(
     model: str,
     messages: List[Dict[str, Any]],
@@ -81,18 +88,18 @@ def _openai_chat_completion(
     
     url = f"{base_url.rstrip('/')}/chat/completions" if base_url else "https://api.openai.com/v1/chat/completions"
     
+    payload: Dict[str, Any] = {"model": model, "messages": messages}
+    if MODELS.get(model, {}).get("supports_temperature", True):
+        payload["temperature"] = temperature
+
     response = requests.post(
         url,
         headers={
             "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
         },
-        json={
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-        },
-        timeout=60,
+        json=payload,
+        timeout=120,
     )
     if response.status_code >= 400:
         raise RuntimeError(f"OpenAI error {response.status_code}: {response.text}")

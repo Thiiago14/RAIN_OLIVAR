@@ -1,3 +1,6 @@
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -6,9 +9,6 @@ from src.features.prediction_perdida import run_prediction_pipeline
 from src.orquestador.olivar_agent import OlivarAgent
 from src.config.models_config import DEFAULT_OLIVAR_MODEL
 from src.utils.report_generator import generate_pdf_report
-
-from src.utils.mqtt_client import publish_alert
-from src.features.build_alert import build_alert
 
 
 def main():
@@ -34,8 +34,6 @@ def main():
         data["impacto_eur_ha_pred"] = row["impacto_eur_ha_pred"]
 
         result = agent.analyze(data)
-        alert = build_alert(row.to_dict())
-        publish_alert(alert)
 
         print("\n============================")
         print(f"Parcela: {row['parcel_id']}")

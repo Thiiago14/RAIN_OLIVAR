@@ -1,23 +1,50 @@
 MODELS = {
     # OpenAI
+    "gpt-5.5": {
+        "provider": "openai",
+        "price_in": 5.00,
+        "price_in_cached": 0.50,
+        "price_out": 30.00,
+        "supports_temperature": False,
+        "description": "nueva clase de inteligencia; programación y trabajo profesional"
+    },
+
+    "gpt-5.4": {
+        "provider": "openai",
+        "price_in": 2.50,
+        "price_in_cached": 0.25,
+        "price_out": 15.00,
+        "supports_temperature": False,
+        "description": "más asequible; programación y trabajo"
+    },
+
+    "gpt-5.4-mini": {
+        "provider": "openai",
+        "price_in": 0.75,
+        "price_in_cached": 0.075,
+        "price_out": 4.50,
+        "supports_temperature": False,
+        "description": "mini más potente para programación, uso de ordenadores y subagentes"
+    },
+
     "gpt-5.2": {
         "provider": "openai",
-        "price_in": 1.75,   
-        "price_out": 14.00,  
+        "price_in": 1.75,
+        "price_out": 14.00,
         "description": "modelo de vanguardia; mayor razonamiento y contexto grande"
     },
 
     "gpt-4o-mini": {
         "provider": "openai",
-        "price_in": 0.15,   
-        "price_out": 0.60,  
+        "price_in": 0.15,
+        "price_out": 0.60,
         "description": "rápido y económico; ideal para extracción"
     },
 
     "gpt-4o": {
         "provider": "openai",
-        "price_in": 2.50,  
-        "price_out": 10.00,  
+        "price_in": 2.50,
+        "price_out": 10.00,
         "description": "más calidad, mayor costo"
     },
 
@@ -50,5 +77,5 @@ MODELS = {
 }
 
 # Defaults por agente
-DEFAULT_OLIVAR_MODEL = "gpt-5.2"
+DEFAULT_OLIVAR_MODEL = "gpt-5.5"
 
