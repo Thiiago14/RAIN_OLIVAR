@@ -36,6 +36,8 @@ from src.features.enrichment_assembler import (
     assemble_enriched_csv, get_enrichment_coverage, SOURCE_COLUMNS, get_ml_readiness,
     get_ml_ready_csv, get_slope_warnings,
 )
+from src.features.input_validator import load_and_validate_ml_csv
+from src.features.prediction_perdida import run_prediction, load_predictions
 
 # ---------------------------------------------------------------------------
 # Página
@@ -367,10 +369,31 @@ col_map, col_table = st.columns([3, 2], gap="large")
 
 with col_map:
     st.markdown('<div class="section-title">🗺 Mapa de parcelas</div>', unsafe_allow_html=True)
+
+    # Selector de modo de visualización
+    map_mode = st.selectbox(
+        "Modo de visualización",
+        options=["uso_sigpac", "riesgo_ml", "impacto_economico", "encharcamiento", "pendiente"],
+        format_func=lambda x: {
+            "uso_sigpac": "Uso SIGPAC",
+            "riesgo_ml": "Riesgo ML (si disponible)",
+            "impacto_economico": "Impacto económico (si disponible)",
+            "encharcamiento": "Encharcamiento",
+            "pendiente": "Pendiente del terreno",
+        }[x],
+        index=0,
+        label_visibility="collapsed",
+    )
+
+    # Cargar predicciones para mapeo
+    predictions_for_map = load_predictions(selected_client)
+
     folium_map = build_parcels_map(
         display_gdf,
         filter_ov=filter_ov_active,
         selected_parcel_id=selected_parcel_id,
+        mode=map_mode,
+        predictions_df=predictions_for_map,
     )
     map_result = st_folium(
         folium_map,
@@ -1040,6 +1063,100 @@ if raw_status == "completo":
         <b style="color:{ready_color}">Estado modelo ML:</b> {ready_badge} ({ml_ready['cols_complete']}/{ml_ready['cols_total']} cols)
         </div>
         """, unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# PREDICCION ML
+# ---------------------------------------------------------------------------
+if raw_status == "completo" and ml_ready["ready"]:
+    st.markdown("---")
+    st.markdown('<div class="section-title">🤖 Predicción ML - Pérdida de producción</div>',
+                unsafe_allow_html=True)
+
+    col_ml_btn, col_ml_status = st.columns([1, 2], gap="medium")
+
+    with col_ml_btn:
+        if st.button("🚀 Generar predicción", use_container_width=True, type="primary"):
+            with st.spinner("Ejecutando modelo ML..."):
+                # Cargar y validar CSV ML-ready
+                df_ml, val_report = load_and_validate_ml_csv(f"data/enriched/{selected_client}_input_enriched.csv")
+
+                if df_ml is not None and val_report["is_valid"]:
+                    # Ejecutar predicción
+                    predictions_df, pred_status = run_prediction(df_ml, selected_client)
+
+                    if predictions_df is not None:
+                        st.success(f"Predicción completada: {pred_status['n_predictions']} parcelas")
+                        st.rerun()
+                    else:
+                        st.error(f"Error predicción: {pred_status['error']}")
+                else:
+                    st.error("CSV no válido para modelo")
+                    if val_report["errors"]:
+                        for err in val_report["errors"]:
+                            st.write(f"- {err}")
+
+    # Mostrar predicciones si existen
+    predictions_df = load_predictions(selected_client)
+    if predictions_df is not None and not predictions_df.empty:
+        with col_ml_status:
+            st.markdown('<div class="section-title" style="margin-top:0">📊 Resultados</div>',
+                        unsafe_allow_html=True)
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric(
+                    "Perdida media",
+                    f"{predictions_df['pct_perdida_pred'].mean() * 100:.1f}%",
+                    delta=f"Min: {predictions_df['pct_perdida_pred'].min() * 100:.1f}%"
+                )
+            with col2:
+                st.metric(
+                    "Impacto total",
+                    f"€{predictions_df['impacto_total_eur'].sum():,.0f}",
+                    delta=f"Media: €{predictions_df['impacto_eur_ha_pred'].mean():.0f}/ha"
+                )
+            with col3:
+                n_alto = int((predictions_df["nivel_riesgo"].isin(["alto", "muy_alto"])).sum())
+                st.metric(
+                    "Parcelas en riesgo",
+                    n_alto,
+                    delta=f"de {len(predictions_df)}"
+                )
+
+        # Tabla de predicciones
+        st.markdown('<div class="section-title" style="margin-top:14px">📋 Tabla de predicciones</div>',
+                    unsafe_allow_html=True)
+        display_cols = ["parcel_id", "pct_perdida_pred_pct", "nivel_riesgo", "impacto_eur_ha_pred", "impacto_total_eur"]
+        display_df = predictions_df[display_cols].copy()
+        display_df.columns = ["Parcela", "Perdida (%)", "Riesgo", "Impacto €/ha", "Impacto total €"]
+
+        # Colorear por riesgo
+        def color_riesgo(val):
+            if val == "muy_alto":
+                return ["background:#FFCDD2"] * len(display_df.columns)
+            elif val == "alto":
+                return ["background:#FFE0B2"] * len(display_df.columns)
+            elif val == "medio":
+                return ["background:#FFF9C4"] * len(display_df.columns)
+            return [""] * len(display_df.columns)
+
+        st.dataframe(
+            display_df.style.apply(lambda row: color_riesgo(row["Riesgo"]), axis=1),
+            use_container_width=True,
+            hide_index=True,
+            height=min(400, 40 + len(display_df) * 35)
+        )
+
+        # Descargar predicciones
+        pred_csv = to_csv_bytes(predictions_df)
+        st.download_button(
+            label="⬇️ Descargar predicciones",
+            data=pred_csv,
+            file_name=f"predictions_{selected_client}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+    elif predictions_df is not None:
+        st.info("No hay predicciones aún. Haz clic en 'Generar predicción'.")
 
 # ---------------------------------------------------------------------------
 # Footer
