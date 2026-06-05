@@ -1,0 +1,20 @@
+{
+  "client_id": "cliente_1",
+  "parcel_id": "cliente_1_P026",
+  "created_at": "2026-06-06T01:26:44",
+  "mode": "parcel",
+  "agronomic_evaluation": "La parcela presenta riesgo bajo de pérdida productiva, con una pérdida estimada del 0.28% y un impacto económico de €31.82/ha (€15.19 total). Las condiciones climáticas actuales son secas (0.0 mm en 7 días), lo que limita el riesgo de enfermedades fúngicas pero puede generar estrés hídrico en tradicional de picual con riego por riego.\n\nLa humedad del suelo es del 9.2%, la materia orgánica del 3.00% y el drenaje es bueno. La pendiente del 20% es adecuada para el manejo mecanizado.",
+  "detected_risks": [
+    "No se detectaron factores de riesgo significativos bajo las condiciones actuales."
+  ],
+  "loss_estimation": "El modelo estima una pérdida del 0.28% de la producción esperada para esta parcela. Con un rendimiento esperado de 3200.0 kg/ha, esto representa un impacto de €31.82/ha, equivalente a €15.19 totales para esta parcela.",
+  "economic_impact": "Impacto estimado: €15.19 (€31.82/ha). Con precio de mercado de €3.5/kg, cualquier mejora en drenaje o manejo hídrico puede mitigar este impacto.",
+  "technical_recommendations": [
+    "Actualizar estado fenológico en la plataforma para refinar la predicción.",
+    "Monitorizar evolución climática los próximos 14 días.",
+    "Repetir análisis tras siguiente evento de lluvia significativo."
+  ],
+  "suggested_action": "Evaluar necesidad de riego de apoyo durante el período de maduración del fruto.",
+  "risk_level": "bajo",
+  "source": "rules"
+}

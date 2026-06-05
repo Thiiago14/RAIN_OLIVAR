@@ -1,0 +1,87 @@
+{
+  "client_id": "cliente_1",
+  "parcel_id": null,
+  "created_at": "2026-06-06T01:29:37",
+  "mode": "general",
+  "summary": "Se analizaron 33 parcelas de olivar. Las pérdidas estimadas son bajas (0.08% de media), lo que se explica principalmente por la ausencia de lluvia acumulada reciente (0.0 mm en 7 días) y encharcamiento nulo. El impacto económico total estimado es de €129.40.\n\nLas condiciones climáticas actuales son secas, con humedad media del suelo del 9.5%. Este escenario es favorable para el olivar desde el punto de vista de enfermedades fúngicas, aunque debe vigilarse el estrés hídrico si la sequía persiste durante el período de crecimiento del fruto.",
+  "risks": [
+    "4 parcelas con pendiente >60%: riesgo de erosión y posibles anomalías SIGPAC a revisar."
+  ],
+  "recommendations": {
+    "corto_plazo": [
+      "Valorar riego de apoyo en parcelas con tensión hídrica si está disponible."
+    ],
+    "medio_plazo": [
+      "Actualizar datos fenológicos antes de la próxima predicción para mayor precisión."
+    ],
+    "seguimiento": [
+      "Monitorizar evolución climática los próximos 14 días.",
+      "Repetir predicción tras eventos de lluvia significativos."
+    ]
+  },
+  "priority_parcels": [
+    {
+      "parcela": "cliente_1_P007",
+      "riesgo": "bajo",
+      "perdida_%": "0.26%",
+      "impacto_total": "€26.77",
+      "motivo": "Mayor impacto económico estimado"
+    },
+    {
+      "parcela": "cliente_1_P005",
+      "riesgo": "bajo",
+      "perdida_%": "0.28%",
+      "impacto_total": "€23.90",
+      "motivo": "Mayor impacto económico estimado"
+    },
+    {
+      "parcela": "cliente_1_P003",
+      "riesgo": "bajo",
+      "perdida_%": "0.25%",
+      "impacto_total": "€20.79",
+      "motivo": "Mayor impacto económico estimado"
+    }
+  ],
+  "report_sections": {
+    "resumen_ejecutivo": "Se analizaron 33 parcelas de olivar. Las pérdidas estimadas son bajas (0.08% de media), lo que se explica principalmente por la ausencia de lluvia acumulada reciente (0.0 mm en 7 días) y encharcamiento nulo. El impacto económico total estimado es de €129.40.\n\nLas condiciones climáticas actuales son secas, con humedad media del suelo del 9.5%. Este escenario es favorable para el olivar desde el punto de vista de enfermedades fúngicas, aunque debe vigilarse el estrés hídrico si la sequía persiste durante el período de crecimiento del fruto.",
+    "riesgos_principales": [
+      "4 parcelas con pendiente >60%: riesgo de erosión y posibles anomalías SIGPAC a revisar."
+    ],
+    "parcelas_prioritarias": [
+      {
+        "parcela": "cliente_1_P007",
+        "riesgo": "bajo",
+        "perdida_%": "0.26%",
+        "impacto_total": "€26.77",
+        "motivo": "Mayor impacto económico estimado"
+      },
+      {
+        "parcela": "cliente_1_P005",
+        "riesgo": "bajo",
+        "perdida_%": "0.28%",
+        "impacto_total": "€23.90",
+        "motivo": "Mayor impacto económico estimado"
+      },
+      {
+        "parcela": "cliente_1_P003",
+        "riesgo": "bajo",
+        "perdida_%": "0.25%",
+        "impacto_total": "€20.79",
+        "motivo": "Mayor impacto económico estimado"
+      }
+    ],
+    "recomendaciones": {
+      "corto_plazo": [
+        "Valorar riego de apoyo en parcelas con tensión hídrica si está disponible."
+      ],
+      "medio_plazo": [
+        "Actualizar datos fenológicos antes de la próxima predicción para mayor precisión."
+      ],
+      "seguimiento": [
+        "Monitorizar evolución climática los próximos 14 días.",
+        "Repetir predicción tras eventos de lluvia significativos."
+      ]
+    }
+  },
+  "source": "rules"
+}

@@ -1,0 +1,20 @@
+{
+  "client_id": "cliente_1",
+  "parcel_id": "cliente_1_P001",
+  "created_at": "2026-06-06T01:09:10",
+  "mode": "parcel",
+  "agronomic_evaluation": "La parcela presenta riesgo bajo de pérdida productiva, con una pérdida estimada del 0.00% y un impacto económico de €0.00/ha (€0.00 total). Las condiciones climáticas actuales son secas (0.0 mm en 7 días), lo que limita el riesgo de enfermedades fúngicas pero puede generar estrés hídrico en tradicional de hojiblanca con riego por riego.\n\nLa humedad del suelo es del 12.5%, la materia orgánica del 3.74% y el drenaje es bueno. La pendiente del 108% es elevada, lo que puede favorecer la escorrentía y erosión superficial.",
+  "detected_risks": [
+    "Pendiente >60% (108%): riesgo de erosión y posible anomalía SIGPAC."
+  ],
+  "loss_estimation": "El modelo estima una pérdida del 0.00% de la producción esperada para esta parcela. Con un rendimiento esperado de 3100.0 kg/ha, esto representa un impacto de €0.00/ha, equivalente a €0.00 totales para esta parcela.",
+  "economic_impact": "Impacto estimado: €0.00 (€0.00/ha). Con precio de mercado de €3.65/kg, cualquier mejora en drenaje o manejo hídrico puede mitigar este impacto.",
+  "technical_recommendations": [
+    "Actualizar estado fenológico en la plataforma para refinar la predicción.",
+    "Monitorizar evolución climática los próximos 14 días.",
+    "Repetir análisis tras siguiente evento de lluvia significativo."
+  ],
+  "suggested_action": "Evaluar necesidad de riego de apoyo durante el período de maduración del fruto.",
+  "risk_level": "—",
+  "source": "rules"
+}
