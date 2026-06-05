@@ -1,0 +1,2 @@
+parcel_uid;parcel_id;client_id;lat;lon;rain_72h_mm;rain_7d_mm;temp_media_7d;humedad_suelo_%;weather_source;weather_updated_at;weather_status;weather_error
+18-116-00510-00199-005;cliente_2_P003;cliente_2;37.1789133538361;-3.070108089639383;0.0;0.0;22.3;9.2;open-meteo;2026-06-05T11:08:25;ok;

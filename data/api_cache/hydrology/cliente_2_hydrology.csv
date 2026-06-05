@@ -1,0 +1,2 @@
+parcel_uid;parcel_id;client_id;lat;lon;distancia_rio_m;nearest_water_type;nearest_water_name;overpass_radius_m;hydrology_source;hydrology_updated_at;hydrology_status;hydrology_error
+18-116-00510-00199-005;cliente_2_P003;cliente_2;37.1789133538361;-3.070108089639383;346;basin;;5000;overpass-osm;2026-06-05T11:10:33;ok;

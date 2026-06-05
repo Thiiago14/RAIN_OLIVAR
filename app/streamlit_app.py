@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
 from shapely.geometry import Point
@@ -19,6 +20,21 @@ from src.features.farmer_inputs import (
 from src.features.persistence import (
     get_client_status,
     save_farmer_inputs, load_farmer_inputs, merge_saved_with_gdf,
+)
+from src.features.weather_enrichment import (
+    load_weather_cache, enrich_weather_for_client, get_weather_stats,
+)
+from src.features.soil_enrichment import (
+    load_soil_cache, enrich_soil_for_client, get_soil_stats,
+)
+from src.features.hydrology_enrichment import (
+    load_hydrology_cache, enrich_hydrology_for_client, get_hydrology_stats,
+)
+from src.features.economic_enrichment import get_economic_stats
+from src.features.waterlogging_calculator import get_waterlogging_risk_distribution
+from src.features.enrichment_assembler import (
+    assemble_enriched_csv, get_enrichment_coverage, SOURCE_COLUMNS, get_ml_readiness,
+    get_ml_ready_csv, get_slope_warnings,
 )
 
 # ---------------------------------------------------------------------------
@@ -402,7 +418,6 @@ if not filter_ov_active and stats["by_uso"]:
     uso_labels = {"OV": "Olivar", "TA": "Tierra arable", "FS": "Frutos secos",
                   "IM": "Improductivo", "CA": "Viales/Caminos"}
     with st.expander("📊 Distribución por uso SIGPAC", expanded=False):
-        import pandas as pd
         rows = []
         for uso, cnt in sorted(stats["by_uso"].items()):
             ha = gdf[gdf["uso_sigpac"] == uso]["area_ha_calc"].sum()
@@ -565,6 +580,466 @@ with col_btn:
         f"{len(display_gdf)} parcelas · 22 cols · sep ;</div>",
         unsafe_allow_html=True,
     )
+
+# ---------------------------------------------------------------------------
+# ENRIQUECIMIENTO METEOROLÓGICO
+# ---------------------------------------------------------------------------
+st.markdown("---")
+st.markdown('<div class="section-title">🌧 Enriquecimiento meteorológico (Open-Meteo)</div>',
+            unsafe_allow_html=True)
+
+if raw_status != "completo":
+    st.markdown("""
+    <div class="warn-box">
+    ⚠️ <b>Confirma primero los datos del agricultor</b> antes de consultar meteorología.<br>
+    El estado del cliente debe ser <b>Completo</b> para habilitar esta sección.
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    # Cargar cache existente
+    weather_df = load_weather_cache(selected_client)
+    w_exists = weather_df is not None and not weather_df.empty
+
+    # Estado del cache
+    if w_exists:
+        wstats = get_weather_stats(weather_df)
+        updated = wstats.get("updated_at", "—")
+        bar_col = "#27AE60" if wstats["pct_ok"] == 100 else "#E67E22"
+        st.markdown(f"""
+        <div class="kpi-row kpi3">
+          <div class="kpi-card ok">
+            <div class="klabel">🌦 Parcelas con datos</div>
+            <div class="kval">{wstats["ok"]}/{wstats["total"]}</div>
+            <div class="ksub" style="color:{bar_col}">{wstats["pct_ok"]}% completitud</div>
+          </div>
+          <div class="kpi-card info">
+            <div class="klabel">📡 Fuente</div>
+            <div class="kval" style="font-size:14px">Open-Meteo</div>
+            <div class="ksub">Sin API key · gratuito</div>
+          </div>
+          <div class="kpi-card {'ok' if wstats['errors']==0 else 'warn'}">
+            <div class="klabel">⚠️ Errores</div>
+            <div class="kval">{wstats["errors"]}</div>
+            <div class="ksub">Última actualización: {str(updated)[:16]}</div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="info-box">
+        No hay datos meteorológicos para este cliente.<br>
+        Haz clic en <b>Obtener datos meteorológicos</b> para consultar Open-Meteo.
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Botón de acción
+    col_fetch, col_dl_w = st.columns([1, 2], gap="medium")
+    with col_fetch:
+        btn_label = "🔄 Actualizar datos meteorológicos" if w_exists else "🌧 Obtener datos meteorológicos"
+        if st.button(btn_label, use_container_width=True, type="primary"):
+            progress_bar = st.progress(0, text="Iniciando consultas a Open-Meteo...")
+            status_text = st.empty()
+
+            def _progress(done, total):
+                pct = int(done / total * 100)
+                progress_bar.progress(pct, text=f"Consultando parcela {done}/{total}...")
+                status_text.markdown(f"*Consultando parcela {done} de {total}...*")
+
+            try:
+                weather_df = enrich_weather_for_client(
+                    selected_client, ov_gdf, max_workers=5,
+                    progress_callback=_progress,
+                )
+                progress_bar.progress(100, text="Completado.")
+                status_text.empty()
+                wstats = get_weather_stats(weather_df)
+                st.success(
+                    f"Datos meteorológicos actualizados: "
+                    f"{wstats['ok']}/{wstats['total']} parcelas OK"
+                    + (f" · {wstats['errors']} con error" if wstats["errors"] else "")
+                )
+                st.rerun()
+            except Exception as e:
+                progress_bar.empty()
+                status_text.empty()
+                st.error(f"Error al consultar Open-Meteo: {e}")
+
+    # Errores parciales
+    if w_exists:
+        err_df = weather_df[weather_df["weather_status"] != "ok"]
+        if not err_df.empty:
+            with st.expander(f"⚠️ {len(err_df)} parcelas con error en meteorología", expanded=False):
+                st.dataframe(
+                    err_df[["parcel_id", "weather_error"]],
+                    use_container_width=True, hide_index=True,
+                )
+
+        # Tabla resumen de variables meteorológicas
+        st.markdown('<div class="section-title" style="margin-top:14px">📊 Variables meteorológicas por parcela</div>',
+                    unsafe_allow_html=True)
+        ok_df = weather_df[weather_df["weather_status"] == "ok"].copy()
+        if not ok_df.empty:
+            display_w = ok_df[["parcel_id", "lat", "lon",
+                                "rain_72h_mm", "rain_7d_mm",
+                                "temp_media_7d", "humedad_suelo_%"]].copy()
+            display_w = display_w.rename(columns={
+                "rain_72h_mm": "Lluvia 72h (mm)",
+                "rain_7d_mm": "Lluvia 7d (mm)",
+                "temp_media_7d": "T media 7d (°C)",
+                "humedad_suelo_%": "Humedad suelo (%)",
+                "lat": "Lat", "lon": "Lon",
+            })
+            for col in ["Lluvia 72h (mm)", "Lluvia 7d (mm)", "T media 7d (°C)", "Humedad suelo (%)"]:
+                if col in display_w.columns:
+                    display_w[col] = pd.to_numeric(display_w[col], errors="coerce").round(2)
+            st.dataframe(display_w, use_container_width=True, hide_index=True, height=300)
+
+        # Descarga CSV completo con meteorología
+        with col_dl_w:
+            if w_exists:
+                # Cargar datos del agricultor confirmados
+                saved_farmer = load_farmer_inputs(selected_client)
+                farmer_subset = None
+                if saved_farmer is not None:
+                    farmer_subset = saved_farmer[
+                        ["parcel_id"] + [c for c in ["tipo_olivar", "riego", "variedad", "estado_fenologico"]
+                                         if c in saved_farmer.columns]
+                    ]
+                enriched_df = build_base_input(ov_gdf, farmer_subset, weather_df)
+                enriched_bytes = to_csv_bytes(enriched_df)
+                st.download_button(
+                    label="⬇️ CSV completo (agricultor + meteo)",
+                    data=enriched_bytes,
+                    file_name=f"input_completo_{selected_client}.csv",
+                    mime="text/csv",
+                    use_container_width=True,
+                )
+                n_weather_filled = int(
+                    weather_df[weather_df["weather_status"] == "ok"].shape[0]
+                )
+                st.markdown(
+                    f"<div style='font-size:11px;color:#7A9A6E;margin-top:4px'>"
+                    f"{len(ov_gdf)} parcelas OV · 22 cols · {n_weather_filled} con meteo · sep ;</div>",
+                    unsafe_allow_html=True,
+                )
+
+# ---------------------------------------------------------------------------
+# ENRIQUECIMIENTO DE SUELO (SoilGrids)
+# ---------------------------------------------------------------------------
+st.markdown("---")
+st.markdown('<div class="section-title">🌱 Enriquecimiento de suelo (SoilGrids ISRIC)</div>',
+            unsafe_allow_html=True)
+
+if raw_status != "completo":
+    st.markdown("""
+    <div class="warn-box">
+    ⚠️ <b>Confirma primero los datos del agricultor</b> antes de consultar datos de suelo.
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    soil_df = load_soil_cache(selected_client)
+    soil_exists = soil_df is not None and not soil_df.empty
+
+    if soil_exists:
+        sstats = get_soil_stats(soil_df)
+        soil_col = "#27AE60" if sstats["pct_ok"] == 100 else "#E67E22"
+        st.markdown(f"""
+        <div class="kpi-row kpi3">
+          <div class="kpi-card ok">
+            <div class="klabel">🌱 Parcelas con datos de suelo</div>
+            <div class="kval">{sstats["ok"]}/{sstats["total"]}</div>
+            <div class="ksub" style="color:{soil_col}">{sstats["pct_ok"]}% completitud</div>
+          </div>
+          <div class="kpi-card info">
+            <div class="klabel">📡 Fuente</div>
+            <div class="kval" style="font-size:13px">SoilGrids v2</div>
+            <div class="ksub">ISRIC · resolución 250m</div>
+          </div>
+          <div class="kpi-card {'ok' if sstats['errors']==0 else 'warn'}">
+            <div class="klabel">⚠️ Errores</div>
+            <div class="kval">{sstats["errors"]}</div>
+            <div class="ksub">Actualizado: {str(sstats.get("updated_at","—"))[:16]}</div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="info-box">
+        No hay datos de suelo para este cliente.<br>
+        Haz clic en <b>Obtener datos de suelo</b> para consultar SoilGrids.
+        </div>
+        """, unsafe_allow_html=True)
+
+    col_soil_btn, col_soil_dl = st.columns([1, 2], gap="medium")
+    with col_soil_btn:
+        soil_btn_label = "🔄 Actualizar datos de suelo" if soil_exists else "🌱 Obtener datos de suelo"
+        if st.button(soil_btn_label, use_container_width=True, type="primary"):
+            soil_progress = st.progress(0, text="Conectando con SoilGrids...")
+            soil_status_txt = st.empty()
+
+            def _soil_progress(done, total):
+                pct = int(done / total * 100)
+                soil_progress.progress(pct, text=f"Consultando parcela {done}/{total}...")
+                soil_status_txt.markdown(f"*Parcela {done} de {total}...*")
+
+            try:
+                soil_df = enrich_soil_for_client(
+                    selected_client, ov_gdf, max_workers=3,
+                    progress_callback=_soil_progress,
+                )
+                soil_progress.progress(100, text="Completado.")
+                soil_status_txt.empty()
+                sstats = get_soil_stats(soil_df)
+                st.success(
+                    f"Datos de suelo actualizados: {sstats['ok']}/{sstats['total']} parcelas OK"
+                    + (f" · {sstats['errors']} con error" if sstats["errors"] else "")
+                )
+                st.rerun()
+            except Exception as e:
+                soil_progress.empty()
+                soil_status_txt.empty()
+                st.error(f"Error al consultar SoilGrids: {e}")
+
+    # Errores parciales de suelo
+    if soil_exists:
+        err_soil = soil_df[soil_df["soil_status"] != "ok"]
+        if not err_soil.empty:
+            with st.expander(f"⚠️ {len(err_soil)} parcelas con error en suelo", expanded=False):
+                st.dataframe(err_soil[["parcel_id", "soil_error"]],
+                             use_container_width=True, hide_index=True)
+
+        # Tabla resumen variables de suelo
+        ok_soil = soil_df[soil_df["soil_status"] == "ok"].copy()
+        if not ok_soil.empty:
+            st.markdown('<div class="section-title" style="margin-top:14px">🪨 Variables de suelo por parcela</div>',
+                        unsafe_allow_html=True)
+            disp_soil = ok_soil[["parcel_id", "tipo_suelo", "drenaje",
+                                  "materia_organica_%", "profundidad_suelo_cm",
+                                  "clay_%", "sand_%", "silt_%"]].copy()
+            for col in ["materia_organica_%", "clay_%", "sand_%", "silt_%"]:
+                if col in disp_soil.columns:
+                    disp_soil[col] = pd.to_numeric(disp_soil[col], errors="coerce").round(2)
+            st.dataframe(disp_soil, use_container_width=True, hide_index=True, height=280)
+
+# ---------------------------------------------------------------------------
+# ENRIQUECIMIENTO HIDROLÓGICO (Overpass API)
+# ---------------------------------------------------------------------------
+st.markdown("---")
+st.markdown('<div class="section-title">🌊 Enriquecimiento hidrológico (Overpass / OSM)</div>',
+            unsafe_allow_html=True)
+
+if raw_status != "completo":
+    st.markdown('<div class="warn-box">⚠️ Confirma primero los datos del agricultor.</div>',
+                unsafe_allow_html=True)
+else:
+    hydro_df = load_hydrology_cache(selected_client)
+    hydro_exists = hydro_df is not None and not hydro_df.empty
+
+    if hydro_exists:
+        hstats = get_hydrology_stats(hydro_df)
+        h_color = "#27AE60" if hstats["pct_ok"] == 100 else "#E67E22"
+        st.markdown(f"""
+        <div class="kpi-row kpi3">
+          <div class="kpi-card ok">
+            <div class="klabel">🌊 Parcelas con distancia</div>
+            <div class="kval">{hstats["ok"]}/{hstats["total"]}</div>
+            <div class="ksub" style="color:{h_color}">{hstats["pct_ok"]}% completitud</div>
+          </div>
+          <div class="kpi-card info">
+            <div class="klabel">📡 Fuente</div>
+            <div class="kval" style="font-size:13px">Overpass / OSM</div>
+            <div class="ksub">Radio: 5000 m · sin API key</div>
+          </div>
+          <div class="kpi-card {'ok' if hstats['errors']+hstats['no_water']==0 else 'warn'}">
+            <div class="klabel">⚠️ Sin agua / errores</div>
+            <div class="kval">{hstats['no_water'] + hstats['errors']}</div>
+            <div class="ksub">Actualizado: {str(hstats.get("updated_at","—"))[:16]}</div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="info-box">No hay datos hidrológicos. Una sola consulta Overpass cubre todas las parcelas del cliente.</div>
+        """, unsafe_allow_html=True)
+
+    col_h_btn, col_h_tbl = st.columns([1, 3], gap="medium")
+    with col_h_btn:
+        h_btn = "🔄 Actualizar hidrología" if hydro_exists else "🌊 Obtener distancia a cauces"
+        if st.button(h_btn, use_container_width=True, type="primary"):
+            with st.spinner("Consultando Overpass API (una sola petición para todas las parcelas)..."):
+                try:
+                    hydro_df = enrich_hydrology_for_client(selected_client, ov_gdf, radius_m=5000)
+                    hstats = get_hydrology_stats(hydro_df)
+                    st.success(
+                        f"Hidrología actualizada: {hstats['ok']}/{hstats['total']} parcelas con distancia"
+                        + (f" · {hstats['no_water']} sin agua en radio" if hstats["no_water"] else "")
+                        + (f" · {hstats['errors']} errores" if hstats["errors"] else "")
+                    )
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error Overpass: {e}")
+
+    if hydro_exists:
+        ok_h = hydro_df[hydro_df["hydrology_status"] == "ok"].copy()
+        err_h = hydro_df[hydro_df["hydrology_status"] != "ok"]
+        if not err_h.empty:
+            with st.expander(f"⚠️ {len(err_h)} parcelas con error / sin agua", expanded=False):
+                st.dataframe(err_h[["parcel_id", "hydrology_status", "hydrology_error"]],
+                             use_container_width=True, hide_index=True)
+        with col_h_tbl:
+            if not ok_h.empty:
+                disp_h = ok_h[["parcel_id", "distancia_rio_m",
+                               "nearest_water_type", "nearest_water_name"]].copy()
+                disp_h["distancia_rio_m"] = pd.to_numeric(disp_h["distancia_rio_m"], errors="coerce").round(0)
+                st.dataframe(disp_h, use_container_width=True, hide_index=True, height=260)
+
+# ---------------------------------------------------------------------------
+# CSV CONSOLIDADO + ENCHARCAMIENTO — integra todas las fuentes disponibles
+# ---------------------------------------------------------------------------
+if raw_status == "completo":
+    st.markdown("---")
+    st.markdown('<div class="section-title">📦 CSV consolidado · 💧 Encharcamiento estimado</div>',
+                unsafe_allow_html=True)
+
+    # Cargar todos los caches disponibles
+    _w_df = load_weather_cache(selected_client)
+    _s_df = load_soil_cache(selected_client)
+    _h_df = load_hydrology_cache(selected_client)
+    _farmer = load_farmer_inputs(selected_client)
+    _farmer_sub = (
+        _farmer[["parcel_id"] + [c for c in ["tipo_olivar", "riego", "variedad", "estado_fenologico"]
+                                 if c in _farmer.columns]]
+        if _farmer is not None else None
+    )
+
+    # Assembler (calcula encharcamiento internamente)
+    enriched_df = assemble_enriched_csv(
+        selected_client, ov_gdf, _farmer_sub, _w_df, _s_df, _h_df
+    )
+    coverage = get_enrichment_coverage(enriched_df)
+
+    # Cobertura por fuente
+    src_labels = {
+        "shapefile": ("🗺", "Shapefile"),
+        "agricultor": ("👨‍🌾", "Agricultor"),
+        "meteorologia": ("🌧", "Meteorología"),
+        "suelo": ("🌱", "Suelo"),
+        "hidrologia": ("🌊", "Hidrología + Encharcam."),
+        "economico": ("💶", "Económico"),
+    }
+    cov_cols = st.columns(len(coverage))
+    for (src, cov), col in zip(coverage.items(), cov_cols):
+        if not cov:
+            continue
+        pct_vals = [v["pct"] for v in cov.values()]
+        avg_pct = round(sum(pct_vals) / len(pct_vals)) if pct_vals else 0
+        icon, label = src_labels.get(src, ("•", src))
+        card_css = "ok" if avg_pct == 100 else ("warn" if avg_pct > 0 else "info")
+        with col:
+            st.markdown(f"""
+            <div class="kpi-card {card_css}" style="padding:10px 12px">
+              <div class="klabel">{icon} {label}</div>
+              <div class="kval" style="font-size:20px">{avg_pct}%</div>
+              <div class="ksub">{len(cov)} col.</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("")
+
+    # Advertencias de pendiente extrema
+    slope_warnings = get_slope_warnings(enriched_df)
+    if slope_warnings:
+        st.markdown('<div class="section-title" style="margin-top:8px">⚠️ Advertencias - Pendiente extrema SIGPAC</div>',
+                    unsafe_allow_html=True)
+        warning_df = pd.DataFrame(slope_warnings)
+        # Colorear por nivel
+        def color_nivel(val):
+            if val == "ALERTA FUERTE":
+                return ["background:#FFEBEE"] * len(warning_df.columns)
+            elif val == "ADVERTENCIA":
+                return ["background:#FFF8E1"] * len(warning_df.columns)
+            return [""] * len(warning_df.columns)
+
+        display_df = warning_df[["parcel_id", "pendiente_%", "nivel"]].copy()
+        display_df.columns = ["Parcela", "Pendiente (%)", "Nivel"]
+        st.dataframe(display_df, use_container_width=True, hide_index=True, height=min(200, 40 + len(warning_df) * 35))
+        st.markdown(
+            '<div style="font-size:11px;color:#C0392B">Nota: Valores extremos (>100%) pueden indicar error SIGPAC. '
+            'Revisar antes de usar en modelo.</div>',
+            unsafe_allow_html=True
+        )
+
+    # Distribución de riesgo de encharcamiento
+    wlog_dist = get_waterlogging_risk_distribution(enriched_df)
+    if any(v > 0 for v in wlog_dist.values() if v is not None):
+        st.markdown('<div class="section-title" style="margin-top:8px">💧 Distribución de riesgo de encharcamiento</div>',
+                    unsafe_allow_html=True)
+        r_cols = st.columns(5)
+        risk_items = [
+            ("Sin riesgo", wlog_dist.get("sin_riesgo", 0), "ok", "0 días"),
+            ("Riesgo bajo", wlog_dist.get("bajo", 0), "info", "0–1 días"),
+            ("Moderado", wlog_dist.get("moderado", 0), "warn", "1–3 días"),
+            ("Alto", wlog_dist.get("alto", 0), "warn", "> 3 días"),
+            ("Sin datos", wlog_dist.get("sin_datos", 0), "info", "lluvia faltante"),
+        ]
+        for (label, val, css, sub), col in zip(risk_items, r_cols):
+            with col:
+                st.markdown(f"""
+                <div class="kpi-card {css}" style="padding:10px 12px">
+                  <div class="klabel">💧 {label}</div>
+                  <div class="kval" style="font-size:22px">{val}</div>
+                  <div class="ksub">{sub}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # Tabla encharcamiento
+        if "duracion_encharcamiento_dias" in enriched_df.columns:
+            with st.expander("Ver tabla de encharcamiento por parcela", expanded=False):
+                wlog_tbl = enriched_df[["parcel_id", "rain_72h_mm", "drenaje",
+                                        "pendiente_%", "distancia_rio_m",
+                                        "duracion_encharcamiento_dias"]].copy()
+                for col in ["rain_72h_mm", "pendiente_%", "distancia_rio_m", "duracion_encharcamiento_dias"]:
+                    if col in wlog_tbl.columns:
+                        wlog_tbl[col] = pd.to_numeric(wlog_tbl[col], errors="coerce").round(2)
+                st.dataframe(wlog_tbl, use_container_width=True, hide_index=True)
+
+    # Descarga consolidado
+    col_dl_cons, col_cons_info = st.columns([1, 3], gap="medium")
+    with col_dl_cons:
+        from src.features.build_input_from_parcels import SCHEMA_COLUMNS
+        n_complete_cols = int(enriched_df[SCHEMA_COLUMNS].notna().all(axis=0).sum())
+
+        # CSV ESTRICTO PARA MODELO (solo 22 cols)
+        ml_df = get_ml_ready_csv(enriched_df)
+        ml_bytes = to_csv_bytes(ml_df)
+        st.download_button(
+            label=f"⬇️ CSV para modelo ML (22 cols)",
+            data=ml_bytes,
+            file_name=f"input_ml_{selected_client}.csv",
+            mime="text/csv",
+            use_container_width=True,
+            type="primary",
+        )
+        st.markdown(
+            f"<div style='font-size:11px;color:#7A9A6E;text-align:center;margin-top:4px'>"
+            f"{len(ml_df)} parcelas OV · 22 cols exactas · sep ;</div>",
+            unsafe_allow_html=True,
+        )
+    with col_cons_info:
+        econ_stats = get_economic_stats(enriched_df)
+        econ_pct = econ_stats.get("pct_all", 0)
+        ml_ready = get_ml_readiness(enriched_df)
+        ready_badge = "LISTO para ML" if ml_ready["ready"] else f"Incompleto: {ml_ready['reason']}"
+        ready_color = "#27AE60" if ml_ready["ready"] else "#E67E22"
+        st.markdown(f"""
+        <div class="info-box">
+        <b>CSV consolidado</b> → <code>data/enriched/{selected_client}_input_enriched.csv</code><br>
+        Integra: shapefile + agricultor + Open-Meteo + SoilGrids + Overpass + económico + encharcamiento.<br>
+        <b>Variables económicas:</b> {econ_stats['all_filled']}/{econ_stats['total']} parcelas ({econ_pct}%) ·
+        rendimiento ({econ_stats['yield_filled']}) · precio ({econ_stats['price_filled']}) · coste ({econ_stats['cost_filled']})<br>
+        <b style="color:{ready_color}">Estado modelo ML:</b> {ready_badge} ({ml_ready['cols_complete']}/{ml_ready['cols_total']} cols)
+        </div>
+        """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # Footer

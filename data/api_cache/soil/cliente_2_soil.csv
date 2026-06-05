@@ -1,0 +1,2 @@
+parcel_uid;parcel_id;client_id;lat;lon;clay_%;sand_%;silt_%;soc_g_kg;materia_organica_%;cfvo_%;tipo_suelo;drenaje;profundidad_suelo_cm;soil_source;soil_updated_at;soil_status;soil_error
+18-116-00510-00199-005;cliente_2_P003;cliente_2;37.1789133538361;-3.070108089639383;20.35;41.9;37.75;26.7;4.6;17.6;Franco;Bueno;85;soilgrids-v2;2026-06-05T11:11:45;ok;

@@ -1,34 +1,14 @@
 import pandas as pd
 import geopandas as gpd
 
-# Columnas del esquema completo de test_olivar.csv
-# Clasificadas por origen de dato
+# Columnas del esquema completo — orden esperado por modelo ML (22 cols)
 SCHEMA_COLUMNS = [
-    # -- Del shapefile/polígono --
-    "parcel_id",
-    "superficie_ha",
-    "pendiente_%",
-    "altitud_m",
-    # -- Localización (del shapefile SIGPAC) --
-    "zona_provincia",
-    # -- A completar por el agricultor --
-    "tipo_olivar",
-    "riego",
-    "variedad",
-    "estado_fenologico",
-    "tipo_suelo",
-    "drenaje",
-    "rendimiento_esperado_kg_ha",
-    "precio_mercado_eur_kg",
-    "coste_variable_ha",
-    # -- Fuentes externas (API climática / sensores) --
-    "rain_72h_mm",
-    "rain_7d_mm",
-    "temp_media_7d",
-    "humedad_suelo_%",
-    "profundidad_suelo_cm",
-    "materia_organica_%",
-    "distancia_rio_m",
+    "parcel_id", "zona_provincia", "tipo_olivar", "riego", "superficie_ha",
+    "variedad", "estado_fenologico", "tipo_suelo", "drenaje", "pendiente_%",
+    "distancia_rio_m", "altitud_m",
+    "rain_72h_mm", "rain_7d_mm", "temp_media_7d", "humedad_suelo_%",
+    "profundidad_suelo_cm", "materia_organica_%",
+    "rendimiento_esperado_kg_ha", "precio_mercado_eur_kg", "coste_variable_ha",
     "duracion_encharcamiento_dias",
 ]
 
@@ -45,11 +25,13 @@ PROVINCIA_MAP = {
 
 
 FARMER_COLS = ["tipo_olivar", "riego", "variedad", "estado_fenologico"]
+WEATHER_COLS = ["rain_72h_mm", "rain_7d_mm", "temp_media_7d", "humedad_suelo_%"]
 
 
 def build_base_input(
     gdf: gpd.GeoDataFrame,
     farmer_data: pd.DataFrame | None = None,
+    weather_data: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     rows = []
 
@@ -85,13 +67,22 @@ def build_base_input(
 
     df = pd.DataFrame(rows, columns=SCHEMA_COLUMNS)
 
-    # Fusionar datos editados por el agricultor si se proporcionan
+    # Fusionar datos del agricultor
     if farmer_data is not None and not farmer_data.empty:
         farmer_idx = farmer_data.set_index("parcel_id")
         for col in FARMER_COLS:
             if col in farmer_idx.columns:
                 mapped = df["parcel_id"].map(farmer_idx[col])
                 df[col] = mapped.where(mapped.notna() & (mapped != ""), df[col])
+
+    # Fusionar datos meteorológicos (solo parcelas con weather_status == "ok")
+    if weather_data is not None and not weather_data.empty:
+        ok_weather = weather_data[weather_data.get("weather_status", "ok") == "ok"] \
+            if "weather_status" in weather_data.columns else weather_data
+        weather_idx = ok_weather.set_index("parcel_id")
+        for col in WEATHER_COLS:
+            if col in weather_idx.columns and col in df.columns:
+                df[col] = df["parcel_id"].map(weather_idx[col])
 
     return df
 

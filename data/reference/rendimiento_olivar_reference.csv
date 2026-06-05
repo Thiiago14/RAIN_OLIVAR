@@ -1,0 +1,15 @@
+zona_provincia;tipo_olivar;riego;variedad;rendimiento_esperado_kg_ha;source;reference_year;notes
+Granada;Tradicional;Secano;Picual;1200;ESYRCE MAPA estimado;2025;media provincial Granada secano
+Granada;Tradicional;Secano;Hojiblanca;1100;ESYRCE MAPA estimado;2025;media provincial Granada secano
+Granada;Tradicional;Secano;Arbequina;1050;ESYRCE MAPA estimado;2025;media provincial Granada secano
+Granada;Tradicional;Secano;Manzanilla;1150;ESYRCE MAPA estimado;2025;media provincial Granada secano
+Granada;Tradicional;Riego;Picual;3200;ESYRCE MAPA estimado;2025;media provincial Granada regadio
+Granada;Tradicional;Riego;Hojiblanca;3100;ESYRCE MAPA estimado;2025;media provincial Granada regadio
+Granada;Tradicional;Riego;Arbequina;2950;ESYRCE MAPA estimado;2025;media provincial Granada regadio
+Granada;Tradicional;Riego;Manzanilla;3150;ESYRCE MAPA estimado;2025;media provincial Granada regadio
+Granada;Intensivo;Secano;Picual;2200;ESYRCE MAPA estimado;2025;intensivo secano Granada
+Granada;Intensivo;Secano;Arbequina;2150;ESYRCE MAPA estimado;2025;intensivo secano Granada
+Granada;Intensivo;Riego;Picual;5500;ESYRCE MAPA estimado;2025;intensivo regadio Granada
+Granada;Intensivo;Riego;Arbequina;5300;ESYRCE MAPA estimado;2025;intensivo regadio Granada
+Granada;Superintensivo;Secano;Arbequina;2800;ESYRCE MAPA estimado;2025;superintensivo Granada
+Granada;Superintensivo;Riego;Arbequina;7500;ESYRCE MAPA estimado;2025;superintensivo riego Granada

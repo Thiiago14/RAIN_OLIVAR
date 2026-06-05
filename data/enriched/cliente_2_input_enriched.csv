@@ -1,0 +1,2 @@
+parcel_id;zona_provincia;tipo_olivar;riego;superficie_ha;variedad;estado_fenologico;tipo_suelo;drenaje;pendiente_%;distancia_rio_m;altitud_m;rain_72h_mm;rain_7d_mm;temp_media_7d;humedad_suelo_%;profundidad_suelo_cm;materia_organica_%;rendimiento_esperado_kg_ha;precio_mercado_eur_kg;coste_variable_ha;duracion_encharcamiento_dias;_ready_for_ml;_cols_complete;_n_parcelas_ov
+cliente_2_P003;Granada;Tradicional;Riego;0.2458;Arbequina;Floracion;Franco;Bueno;31;346;1192;0.0;0.0;22.3;9.2;85;4.6;2950.0;4.2;780.0;0.0;True;22;1

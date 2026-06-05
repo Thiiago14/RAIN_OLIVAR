@@ -1,0 +1,7 @@
+tipo_olivar;riego;coste_variable_ha;source;reference_year;notes
+Tradicional;Secano;450;tabla referencia costes;2025;costes variables sin riego
+Tradicional;Riego;780;tabla referencia costes;2025;costes variables con riego
+Intensivo;Secano;650;tabla referencia costes;2025;costes aumentados por intensificacion
+Intensivo;Riego;1100;tabla referencia costes;2025;intensivo + riego
+Superintensivo;Secano;850;tabla referencia costes;2025;costes altos superintensivo
+Superintensivo;Riego;1400;tabla referencia costes;2025;superintensivo + riego
