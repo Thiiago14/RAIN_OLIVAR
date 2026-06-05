@@ -1,10 +1,10 @@
 parcel_id;zona_provincia;tipo_olivar;riego;superficie_ha;variedad;estado_fenologico;tipo_suelo;drenaje;pendiente_%;distancia_rio_m;altitud_m;rain_72h_mm;rain_7d_mm;temp_media_7d;humedad_suelo_%;profundidad_suelo_cm;materia_organica_%;rendimiento_esperado_kg_ha;precio_mercado_eur_kg;coste_variable_ha;duracion_encharcamiento_dias;_ready_for_ml;_cols_complete;_n_parcelas_ov
 cliente_1_P001;Granada;Tradicional;Riego;0.088;Hojiblanca;Floracion;Franco;Bueno;108;807;1212;0.0;0.0;22.5;12.5;110;3.74;3100.0;3.65;780.0;0.0;True;22;33
 cliente_1_P002;Granada;Intensivo;Secano;1.3092;Manzanilla;Brotacion;Franco;Bueno;20;246;1130;0.0;0.0;22.7;9.2;85;3.15;2200.0;4.0;650.0;0.0;True;22;33
-cliente_1_P003;Granada;Intensivo;Secano;0.9193;Arbequina;Brotacion;Franco;Bueno;22;126;1127;0.0;0.0;22.7;9.2;85;3.15;2150.0;4.2;650.0;0.0;True;22;33
+cliente_1_P003;Granada;Intensivo;Secano;0.9193;Arbequina;Engorde;Franco;Bueno;22;126;1127;0.0;0.0;22.7;9.2;85;3.15;2150.0;4.2;650.0;0.0;True;22;33
 cliente_1_P004;Granada;Superintensivo;Riego;0.4969;Arbequina;Brotacion;Franco;Bueno;28;378;1140;0.0;0.0;22.6;9.2;85;2.86;7500.0;4.2;1400.0;0.0;True;22;33
-cliente_1_P005;Granada;Intensivo;Secano;1.1043;Arbequina;Cuajado;Franco;Bueno;25;179;1137;0.0;0.0;22.6;9.2;85;3.03;2150.0;4.2;650.0;0.0;True;22;33
-cliente_1_P006;Granada;Tradicional;Secano;0.0109;Otra;Brotacion;Franco;Bueno;24;124;1132;0.0;0.0;22.7;9.2;85;3.14;1200.0;3.5;450.0;0.0;True;22;33
+cliente_1_P005;Granada;Intensivo;Secano;1.1043;Picual;Cuajado;Franco;Bueno;25;179;1137;0.0;0.0;22.6;9.2;85;3.03;2200.0;3.5;650.0;0.0;True;22;33
+cliente_1_P006;Granada;Tradicional;Riego;0.0109;Otra;Brotacion;Franco;Bueno;24;124;1132;0.0;0.0;22.7;9.2;85;3.14;3200.0;3.5;780.0;0.0;True;22;33
 cliente_1_P007;Granada;Tradicional;Secano;2.4742;Picual;Floracion;Franco;Bueno;24;195;1130;0.0;0.0;22.7;9.2;85;3.0;1200.0;3.5;450.0;0.0;True;22;33
 cliente_1_P008;Granada;Tradicional;Secano;1.8587;Picual;Floracion;Franco;Bueno;18;321;1127;0.0;0.0;22.7;9.2;85;3.17;1200.0;3.5;450.0;0.0;True;22;33
 cliente_1_P009;Granada;Tradicional;Secano;0.9561;Picual;Cuajado;Franco;Bueno;25;112;1129;0.0;0.0;22.7;9.2;85;3.15;1200.0;3.5;450.0;0.0;True;22;33

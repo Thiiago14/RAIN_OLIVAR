@@ -1,18 +1,18 @@
 """
 Página de modelado y predicciones.
-Contiene: estado, validación, botón predicción, KPIs, mapa, gráficos, tabla.
+Dashboard completo: estado, KPIs, mapa, gráficos, tabla, descargas.
 """
 import streamlit as st
 import pandas as pd
-from src.features.build_input_from_parcels import SCHEMA_COLUMNS, to_csv_bytes
+
 from src.features.input_validator import load_and_validate_ml_csv
 from src.features.prediction_perdida import run_prediction, load_predictions
-from src.features.enrichment_assembler import get_ml_readiness, get_ml_ready_csv
+from src.features.enrichment_assembler import get_ml_readiness
+from src.features.build_input_from_parcels import to_csv_bytes
 from src.geo.map_builder import build_parcels_map
 from src.geo.parcels_processor import process_parcels
 from src.geo.geodata_loader import load_client_geodataframe
 from src.geo.usage_filter import filter_ov
-from app.components.kpi_cards import show_prediction_kpis
 from app.components.charts import (
     show_risk_distribution,
     show_top_parcels_by_loss,
@@ -20,231 +20,380 @@ from app.components.charts import (
     show_scatter_loss_vs_rain,
     show_scatter_waterlogging_vs_loss,
     show_loss_by_parcel_bars,
+    show_single_parcel_summary,
 )
+
+
+def _build_modeling_df(predictions_df: pd.DataFrame, enriched_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Fusiona predicciones con datos enriquecidos por parcel_id.
+
+    Siempre usa parcel_id porque parcel_uid en predictions es un índice autoincremental
+    (0, 1, 2...) que no coincide con los UIDs de SIGPAC en el shapefile.
+    """
+    if enriched_df is None or enriched_df.empty:
+        return predictions_df.copy()
+
+    modeling_df = predictions_df.copy()
+    enriched_copy = enriched_df.copy()
+
+    # Normalizar clave de merge a string limpio
+    modeling_df["parcel_id"] = modeling_df["parcel_id"].astype(str).str.strip()
+    enriched_copy["parcel_id"] = enriched_copy["parcel_id"].astype(str).str.strip()
+
+    # Traer columnas enriquecidas que no están ya en predictions
+    extra_cols = ["parcel_id"] + [c for c in enriched_copy.columns if c not in modeling_df.columns]
+    modeling_df = modeling_df.merge(enriched_copy[extra_cols], on="parcel_id", how="left")
+
+    return modeling_df
+
+
+def _build_map_gdf(ov_gdf, enriched_df: pd.DataFrame | None, predictions_df: pd.DataFrame | None):
+    """
+    Construye GeoDataFrame completo para el mapa, combinando geometrías + enriquecimiento + predicciones.
+
+    Siempre usa parcel_id como clave de merge porque parcel_uid en predictions
+    es un índice autoincremental (0,1,2...) que NO coincide con los UIDs de SIGPAC.
+    """
+    import geopandas as gpd
+
+    map_gdf = ov_gdf.copy()
+    map_gdf["parcel_id"] = map_gdf["parcel_id"].astype(str).str.strip()
+
+    # 1. Merge con enriquecimiento (pendiente_%, rain_7d_mm, humedad, etc.)
+    if enriched_df is not None and not enriched_df.empty:
+        enrich = enriched_df.drop(columns=["geometry"], errors="ignore").copy()
+        enrich["parcel_id"] = enrich["parcel_id"].astype(str).str.strip()
+        extra = ["parcel_id"] + [c for c in enrich.columns if c not in map_gdf.columns]
+        map_gdf = map_gdf.merge(enrich[extra], on="parcel_id", how="left")
+
+    # 2. Merge con predicciones (nivel_riesgo, impacto_total_eur, etc.)
+    if predictions_df is not None and not predictions_df.empty:
+        preds = predictions_df.copy()
+        preds["parcel_id"] = preds["parcel_id"].astype(str).str.strip()
+        extra = ["parcel_id"] + [c for c in preds.columns if c not in map_gdf.columns]
+        map_gdf = map_gdf.merge(preds[extra], on="parcel_id", how="left")
+
+    # 3. Convertir columnas numéricas
+    numeric_candidates = [
+        "pendiente_%", "pendiente_pct", "rain_72h_mm", "rain_7d_mm",
+        "humedad_suelo_%", "duracion_encharcamiento_dias", "distancia_rio_m",
+        "pct_perdida_pred_pct", "pct_perdida_pred",
+        "impacto_total_eur", "impacto_eur_ha_pred",
+        "rendimiento_esperado_kg_ha", "precio_mercado_eur_kg",
+        "altitud_m", "profundidad_suelo_cm", "materia_organica_%",
+    ]
+    for col in numeric_candidates:
+        if col in map_gdf.columns:
+            map_gdf[col] = pd.to_numeric(map_gdf[col], errors="coerce")
+
+    return map_gdf
+
+
+def _last_prediction_date(predictions_df: pd.DataFrame) -> str:
+    """Retorna la fecha de la última predicción o '—'."""
+    if "prediction_updated_at" in predictions_df.columns:
+        val = predictions_df["prediction_updated_at"].iloc[0]
+        return str(val)[:16] if pd.notna(val) else "—"
+    return "—"
 
 
 def render_page_modeling(selected_client: str, enriched_df: pd.DataFrame | None) -> None:
     """Página principal de modelado y predicciones."""
 
-    st.markdown('<div class="section-title">🤖 Modelado y predicciones</div>', unsafe_allow_html=True)
+    # Encabezado
+    st.markdown(
+        "<h2 style='color:#2D5016;margin-bottom:2px'>🤖 Modelado y predicciones</h2>"
+        "<p style='color:#7A9A6E;font-size:13px;margin-top:0'>Resultados estimados de pérdida de producción por parcela</p>",
+        unsafe_allow_html=True,
+    )
 
-    # === ESTADO DEL MODELO ===
-    st.markdown("### Estado del modelo")
-
+    # === REQUISITOS PREVIOS ===
     if enriched_df is None or enriched_df.empty:
-        st.error("No hay CSV consolidado. Completa el enriquecimiento primero.")
+        st.error("No hay datos enriquecidos. Completa la pestaña Enriquecimiento primero.")
         return
 
     ml_ready = get_ml_readiness(enriched_df)
-    ready_color = "#27AE60" if ml_ready["ready"] else "#E67E22"
-    ready_badge = "LISTO para ML" if ml_ready["ready"] else "Incompleto"
+    predictions_df = load_predictions(selected_client)
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Estado modelo", ready_badge, help="Requiere 22/22 columnas completas")
-    with col2:
-        st.metric("Columnas completas", f"{ml_ready['cols_complete']}/{ml_ready['cols_total']}")
-    with col3:
-        st.metric("Parcelas listas", ml_ready["parcelas_ok"])
+    # === ESTADO + BOTÓN ===
+    col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+    with col_s1:
+        color = "#27AE60" if ml_ready["ready"] else "#E67E22"
+        st.markdown(
+            f"<div style='background:#fff;border-radius:10px;padding:12px 16px;"
+            f"border-left:4px solid {color};box-shadow:0 2px 6px rgba(0,0,0,.06)'>"
+            f"<div style='font-size:10px;color:#7A9A6E;text-transform:uppercase;font-weight:600'>Estado</div>"
+            f"<div style='font-size:18px;font-weight:700;color:{color}'>"
+            f"{'LISTO' if ml_ready['ready'] else 'Incompleto'}</div>"
+            f"<div style='font-size:11px;color:#999'>para modelo ML</div></div>",
+            unsafe_allow_html=True,
+        )
+    with col_s2:
+        st.markdown(
+            f"<div style='background:#fff;border-radius:10px;padding:12px 16px;"
+            f"border-left:4px solid #4A7C59;box-shadow:0 2px 6px rgba(0,0,0,.06)'>"
+            f"<div style='font-size:10px;color:#7A9A6E;text-transform:uppercase;font-weight:600'>Columnas</div>"
+            f"<div style='font-size:18px;font-weight:700;color:#1E3A2F'>"
+            f"{ml_ready['cols_complete']}/22</div>"
+            f"<div style='font-size:11px;color:#999'>variables completas</div></div>",
+            unsafe_allow_html=True,
+        )
+    with col_s3:
+        st.markdown(
+            f"<div style='background:#fff;border-radius:10px;padding:12px 16px;"
+            f"border-left:4px solid #4A7C59;box-shadow:0 2px 6px rgba(0,0,0,.06)'>"
+            f"<div style='font-size:10px;color:#7A9A6E;text-transform:uppercase;font-weight:600'>Parcelas listas</div>"
+            f"<div style='font-size:18px;font-weight:700;color:#1E3A2F'>"
+            f"{ml_ready.get('parcelas_ok', '—')}</div>"
+            f"<div style='font-size:11px;color:#999'>de {len(enriched_df)} OV</div></div>",
+            unsafe_allow_html=True,
+        )
+    with col_s4:
+        last_pred = _last_prediction_date(predictions_df) if predictions_df is not None else "—"
+        st.markdown(
+            f"<div style='background:#fff;border-radius:10px;padding:12px 16px;"
+            f"border-left:4px solid {'#4A7C59' if predictions_df is not None else '#CCC'};"
+            f"box-shadow:0 2px 6px rgba(0,0,0,.06)'>"
+            f"<div style='font-size:10px;color:#7A9A6E;text-transform:uppercase;font-weight:600'>Última predicción</div>"
+            f"<div style='font-size:13px;font-weight:700;color:#1E3A2F'>{last_pred}</div>"
+            f"<div style='font-size:11px;color:#999'>fecha/hora</div></div>",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<div style='margin-top:12px'></div>", unsafe_allow_html=True)
 
     if not ml_ready["ready"]:
-        st.warning(f"⚠️ No listo: {ml_ready['reason']}")
+        st.warning(f"⚠️ {ml_ready['reason']} — Completa el enriquecimiento antes de generar predicción.")
         return
 
-    # === VALIDACIÓN Y PREDICCIÓN ===
-    st.markdown("### Generar predicción")
-
-    col_btn, col_status = st.columns([1, 2])
-
-    with col_btn:
-        if st.button("🚀 Generar predicción", use_container_width=True, type="primary", disabled=not ml_ready["ready"]):
-            with st.spinner("Validando CSV y ejecutando modelo..."):
-                # Validar CSV
-                df_ml, val_report = load_and_validate_ml_csv(f"data/enriched/{selected_client}_input_enriched.csv")
-
-                if df_ml is not None and val_report["is_valid"]:
-                    # Predicción
-                    predictions_df, pred_status = run_prediction(df_ml, selected_client)
-
-                    if predictions_df is not None:
-                        st.session_state["predictions_generated"] = True
-                        st.success(f"✓ Predicción completada: {pred_status['n_predictions']} parcelas")
-                        st.rerun()
-                    else:
-                        st.error(f"Error predicción: {pred_status['error']}")
+    # === BOTÓN PREDICCIÓN ===
+    if st.button("🚀 Generar predicción", type="primary", use_container_width=False):
+        with st.spinner("Validando CSV y ejecutando modelo..."):
+            df_ml, val_report = load_and_validate_ml_csv(
+                f"data/enriched/{selected_client}_input_enriched.csv"
+            )
+            if df_ml is not None and val_report["is_valid"]:
+                result_df, pred_status = run_prediction(df_ml, selected_client)
+                if result_df is not None:
+                    st.session_state["predictions_generated"] = True
+                    st.success(f"Predicción completada: {pred_status['n_predictions']} parcelas")
+                    st.rerun()
                 else:
-                    st.error("CSV no válido para modelo")
-
-    # === CARGAR PREDICCIONES ===
-    predictions_df = load_predictions(selected_client)
+                    st.error(f"Error: {pred_status['error']}")
+            else:
+                st.error("CSV no válido para el modelo")
+                for e in val_report.get("errors", []):
+                    st.write(f"- {e}")
 
     if predictions_df is None or predictions_df.empty:
         st.info("Sin predicciones. Ejecuta 'Generar predicción' para comenzar.")
         return
 
-    # === MERGE: PREDICCIONES + ENRIQUECIMIENTO ===
-    # Crear DataFrame combinado para modelado (con todas las columnas necesarias)
-    modeling_df = predictions_df.copy()
+    # === CONSTRUIR MODELING_DF ===
+    modeling_df = _build_modeling_df(predictions_df, enriched_df)
 
-    # Preferir merge por parcel_uid si ambos tienen la columna
-    merge_key = "parcel_uid" if "parcel_uid" in enriched_df.columns and "parcel_uid" in modeling_df.columns else "parcel_id"
-
-    # Convertir a string para asegurar compatibilidad de tipos
-    modeling_df[merge_key] = modeling_df[merge_key].astype(str)
-    enriched_merge = enriched_df.copy()
-    enriched_merge[merge_key] = enriched_merge[merge_key].astype(str)
-
-    # Columns que queremos del enriquecimiento (evitar duplicados con predicciones)
-    enrich_cols = [merge_key]
-    for col in enriched_merge.columns:
-        if col not in modeling_df.columns and col != merge_key:
-            enrich_cols.append(col)
-
-    modeling_df = modeling_df.merge(
-        enriched_merge[enrich_cols],
-        on=merge_key,
-        how="left"
-    )
+    # Nota sobre condiciones climáticas si pérdida es muy baja
+    mean_loss = modeling_df["pct_perdida_pred_pct"].mean()
+    if "rain_7d_mm" in modeling_df.columns:
+        mean_rain = pd.to_numeric(modeling_df["rain_7d_mm"], errors="coerce").mean()
+        if mean_rain < 5 and mean_loss < 1:
+            st.info(
+                "Las pérdidas estimadas son bajas porque no se registró lluvia acumulada "
+                "reciente ni encharcamiento en las parcelas evaluadas."
+            )
 
     # === KPIs ===
-    st.markdown("### KPIs principales")
-    show_prediction_kpis(modeling_df)
+    st.markdown("---")
+    st.markdown("<div class='section-title'>📊 KPIs principales</div>", unsafe_allow_html=True)
 
-    # === MAPA DE RIESGO ===
-    st.markdown("### Mapa de resultados del modelo")
+    n = len(modeling_df)
+    perdida_media = modeling_df["pct_perdida_pred_pct"].mean()
+    perdida_max = modeling_df["pct_perdida_pred_pct"].max()
+    impacto_total = modeling_df["impacto_total_eur"].sum()
+    impacto_medio = modeling_df["impacto_eur_ha_pred"].mean()
+    n_alto = int(modeling_df["nivel_riesgo"].isin(["alto", "muy_alto"]).sum())
+    parcela_critica = modeling_df.loc[modeling_df["impacto_total_eur"].idxmax(), "parcel_id"] if n > 0 else "—"
 
-    # Cargar GDF para mapa
-    gdf = process_parcels(load_client_geodataframe(selected_client), selected_client)
-    ov_gdf = filter_ov(gdf)
-
-    map_mode = st.selectbox(
-        "Modo de visualización del mapa",
-        options=["riesgo_ml", "impacto_economico", "encharcamiento", "pendiente", "uso_sigpac"],
-        format_func=lambda x: {
-            "riesgo_ml": "Riesgo ML",
-            "impacto_economico": "Impacto económico",
-            "encharcamiento": "Encharcamiento",
-            "pendiente": "Pendiente del terreno",
-            "uso_sigpac": "Uso SIGPAC (referencia)",
-        }[x],
-        index=0,
-    )
-
-    folium_map = build_parcels_map(
-        ov_gdf,
-        filter_ov=True,
-        mode=map_mode,
-        predictions_df=modeling_df,
-    )
-
-    from streamlit_folium import st_folium
-
-    st_folium(folium_map, use_container_width=True, height=500)
-
-    # === GRÁFICOS ===
-    st.markdown("### Análisis visual")
-
-    tab1, tab2, tab3 = st.tabs(["Distribución", "Top parcelas", "Correlaciones"])
-
-    with tab1:
-        col1, col2 = st.columns(2)
-        with col1:
-            show_risk_distribution(modeling_df)
-        with col2:
-            show_loss_by_parcel_bars(modeling_df)
-
-    with tab2:
-        col1, col2 = st.columns(2)
-        with col1:
-            show_top_parcels_by_loss(modeling_df, 10)
-        with col2:
-            show_top_parcels_by_impact(modeling_df, 10)
-
-    with tab3:
-        col1, col2 = st.columns(2)
-        with col1:
-            show_scatter_loss_vs_rain(modeling_df)
-        with col2:
-            show_scatter_waterlogging_vs_loss(modeling_df)
-
-    # === TABLA ===
-    st.markdown("### Tabla de predicciones")
-
-    # Usar solo columnas que existen en predicciones
-    display_cols = [
-        "parcel_id",
-        "superficie_ha",
-        "pct_perdida_pred_pct",
-        "nivel_riesgo",
-        "impacto_eur_ha_pred",
-        "impacto_total_eur",
+    kpi_data = [
+        ("Parcelas analizadas", str(n), ""),
+        ("Pérdida media", f"{perdida_media:.2f}%", "estimada"),
+        ("Pérdida máxima", f"{perdida_max:.2f}%", "caso más crítico"),
+        ("Impacto total", f"€ {impacto_total:,.0f}", "estimado"),
+        ("Impacto medio/ha", f"€ {impacto_medio:,.2f}", "por hectárea"),
+        ("Riesgo alto/muy alto", str(n_alto), f"de {n} (por impacto)"),
+        ("Parcela crítica (impacto)", parcela_critica, "mayor impacto económico"),
     ]
 
-    # Agregar columnas adicionales si están disponibles (del merge con enriched_df)
-    if "rain_7d_mm" in plot_df.columns:
-        display_cols.append("rain_7d_mm")
-    if "humedad_suelo_%" in enriched_df.columns:
-        display_cols.append("humedad_suelo_%")
-    if "drenaje" in enriched_df.columns:
-        display_cols.append("drenaje")
-    if "duracion_encharcamiento_dias" in plot_df.columns:
-        display_cols.append("duracion_encharcamiento_dias")
+    kpi_cols = st.columns(len(kpi_data))
+    for col, (label, value, sub) in zip(kpi_cols, kpi_data):
+        with col:
+            st.markdown(
+                f"<div style='background:#fff;border-radius:10px;padding:10px 12px;"
+                f"border-top:3px solid #4A7C59;box-shadow:0 2px 6px rgba(0,0,0,.06);text-align:center'>"
+                f"<div style='font-size:9px;color:#7A9A6E;text-transform:uppercase;font-weight:600;letter-spacing:.5px'>{label}</div>"
+                f"<div style='font-size:17px;font-weight:700;color:#1E3A2F;margin:4px 0'>{value}</div>"
+                f"<div style='font-size:10px;color:#aaa'>{sub}</div></div>",
+                unsafe_allow_html=True,
+            )
 
-    display_df = modeling_df[[col for col in display_cols if col in modeling_df.columns]].copy()
+    # === MAPA DE RESULTADOS ===
+    st.markdown("---")
+    st.markdown("<div class='section-title'>🗺 Mapa de resultados del modelo</div>", unsafe_allow_html=True)
 
-    # Mapeo de nombres de columnas
-    col_names_map = {
+    try:
+        gdf = process_parcels(load_client_geodataframe(selected_client), selected_client)
+        ov_gdf = filter_ov(gdf)
+
+        # Construir GeoDataFrame completo para el mapa (geometría + enriquecimiento + predicciones)
+        # Usa parcel_id como clave (parcel_uid en predictions es índice autoincremental, no SIGPAC)
+        map_gdf = _build_map_gdf(ov_gdf, enriched_df, predictions_df)
+
+        col_mode, col_base = st.columns([2, 1], gap="medium")
+        with col_mode:
+            map_mode = st.selectbox(
+                "Modo de visualización",
+                options=["riesgo", "impacto_economico", "encharcamiento", "pendiente", "uso_sigpac"],
+                format_func=lambda x: {
+                    "riesgo": "🎯 Predicción de riesgo",
+                    "impacto_economico": "💶 Impacto económico",
+                    "encharcamiento": "💧 Encharcamiento estimado",
+                    "pendiente": "⛰️ Pendiente del terreno",
+                    "uso_sigpac": "🗺 Uso SIGPAC (referencia)",
+                }[x],
+                index=0,
+                label_visibility="collapsed",
+            )
+        with col_base:
+            from src.geo.map_builder import BASEMAPS
+            basemap = st.selectbox(
+                "Mapa base",
+                options=list(BASEMAPS.keys()),
+                index=0,
+                label_visibility="collapsed",
+            )
+
+        # Verificar que los datos de predicción están en el GeoDataFrame
+        if map_mode in ("riesgo", "impacto_economico") and "nivel_riesgo" not in map_gdf.columns:
+            st.warning("No hay predicciones disponibles para este modo. Genera predicciones primero.")
+        else:
+            # Pasar el GeoDataFrame ya fusionado (predictions_df=None para evitar merge interno)
+            folium_map = build_parcels_map(
+                map_gdf,
+                filter_ov=False,   # ya filtrado OV en map_gdf
+                mode=map_mode,
+                predictions_df=None,   # ya fusionado en map_gdf
+                basemap=basemap,
+            )
+            from streamlit_folium import st_folium
+            st_folium(folium_map, use_container_width=True, height=500)
+
+    except Exception as e:
+        import traceback
+        st.warning(f"No se pudo renderizar el mapa: {str(e)}")
+        st.code(traceback.format_exc())
+
+    # === GRÁFICOS ===
+    st.markdown("---")
+    st.markdown("<div class='section-title'>📈 Análisis visual</div>", unsafe_allow_html=True)
+
+    n_parcelas = len(modeling_df)
+
+    if n_parcelas <= 1:
+        # Caso de una sola parcela: ficha resumen
+        st.info("Este cliente tiene una sola parcela de olivar. Los gráficos comparativos se activan cuando existan dos o más parcelas.")
+        show_single_parcel_summary(modeling_df)
+    else:
+        tab1, tab2, tab3 = st.tabs(["📊 Distribución", "🏆 Top parcelas", "🔬 Correlaciones"])
+
+        with tab1:
+            col1, col2 = st.columns(2)
+            with col1:
+                show_risk_distribution(modeling_df)
+            with col2:
+                show_loss_by_parcel_bars(modeling_df)
+
+        with tab2:
+            col1, col2 = st.columns(2)
+            with col1:
+                show_top_parcels_by_loss(modeling_df, 10)
+            with col2:
+                show_top_parcels_by_impact(modeling_df, 10)
+
+        with tab3:
+            col1, col2 = st.columns(2)
+            with col1:
+                show_scatter_loss_vs_rain(modeling_df)
+            with col2:
+                show_scatter_waterlogging_vs_loss(modeling_df)
+
+    # === TABLA ===
+    st.markdown("---")
+    st.markdown("<div class='section-title'>📋 Tabla de predicciones</div>", unsafe_allow_html=True)
+
+    # Columnas para el cliente (sin columnas técnicas)
+    table_col_map = {
         "parcel_id": "Parcela",
         "superficie_ha": "Superficie (ha)",
-        "pct_perdida_pred_pct": "Pérdida (%)",
-        "nivel_riesgo": "Riesgo",
+        "pct_perdida_pred_pct": "Pérdida estimada (%)",
+        "nivel_riesgo": "Predicción de riesgo",
         "impacto_eur_ha_pred": "Impacto €/ha",
         "impacto_total_eur": "Impacto total €",
         "rain_7d_mm": "Lluvia 7d (mm)",
-        "humedad_suelo_%": "Humedad (%)",
-        "drenaje": "Drenaje",
+        "humedad_suelo_%": "Humedad suelo (%)",
+        "pendiente_%": "Pendiente (%)",
         "duracion_encharcamiento_dias": "Encharcamiento (días)",
     }
-    display_df.columns = [col_names_map.get(c, c) for c in display_df.columns]
+    available_cols = [c for c in table_col_map if c in modeling_df.columns]
+    table_df = modeling_df[available_cols].copy()
 
-    # Colorear por riesgo
-    def color_riesgo(val):
-        if val == "muy_alto":
-            return ["background:#FFCDD2"] * len(display_df.columns)
-        elif val == "alto":
-            return ["background:#FFE0B2"] * len(display_df.columns)
-        elif val == "medio":
-            return ["background:#FFF9C4"] * len(display_df.columns)
-        return [""] * len(display_df.columns)
+    # Ordenar: riesgo → impacto desc → pérdida desc
+    risk_order = {"muy_alto": 0, "alto": 1, "medio": 2, "bajo": 3}
+    if "nivel_riesgo" in table_df.columns:
+        table_df["_risk_order"] = table_df["nivel_riesgo"].map(risk_order).fillna(9)
+        table_df = table_df.sort_values(
+            ["_risk_order", "impacto_total_eur", "pct_perdida_pred_pct"],
+            ascending=[True, False, False],
+        ).drop(columns=["_risk_order"])
+
+    table_df.columns = [table_col_map.get(c, c) for c in table_df.columns]
+
+    # Color por riesgo
+    def _color_row(row):
+        r = row.get("Predicción de riesgo", "")
+        if r == "muy_alto":
+            return ["background:#FFCDD2;color:#B71C1C"] * len(row)
+        if r == "alto":
+            return ["background:#FFE0B2;color:#E65100"] * len(row)
+        if r == "medio":
+            return ["background:#FFF9C4;color:#F57F17"] * len(row)
+        return [""] * len(row)
 
     st.dataframe(
-        display_df.style.apply(lambda row: color_riesgo(row["Riesgo"]), axis=1),
+        table_df.style.apply(_color_row, axis=1),
         use_container_width=True,
-        height=min(400, 40 + len(display_df) * 35),
+        height=min(420, 42 + len(table_df) * 36),
+        hide_index=True,
     )
 
-    # === DESCARGAS ===
-    st.markdown("### Descargas")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        pred_csv = to_csv_bytes(predictions_df)
+    # === DESCARGA ===
+    st.markdown("---")
+    col_dl, col_info = st.columns([1, 2])
+    with col_dl:
+        # Exportar predicciones + variables clave (sin columnas técnicas internas)
+        export_cols = [c for c in table_col_map if c in modeling_df.columns]
+        export_df = modeling_df[export_cols].copy()
         st.download_button(
-            label="⬇️ Descargar predicciones (CSV)",
-            data=pred_csv,
-            file_name=f"predictions_{selected_client}.csv",
+            label="⬇️ Descargar resultados de predicción",
+            data=to_csv_bytes(export_df),
+            file_name=f"prediccion_{selected_client}.csv",
             mime="text/csv",
             use_container_width=True,
+            type="primary",
         )
-
-    with col2:
-        ml_df = get_ml_ready_csv(enriched_df)
-        ml_csv = to_csv_bytes(ml_df)
-        st.download_button(
-            label="⬇️ Descargar CSV modelo (22 cols)",
-            data=ml_csv,
-            file_name=f"input_ml_{selected_client}.csv",
-            mime="text/csv",
-            use_container_width=True,
+    with col_info:
+        st.caption(
+            f"El archivo incluye: parcela, pérdida estimada, nivel de riesgo, "
+            f"impacto económico y variables ambientales clave. "
+            f"{len(export_df)} parcelas · sep ;"
         )

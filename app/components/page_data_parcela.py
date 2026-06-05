@@ -1,5 +1,6 @@
 """Página de preparación y carga de datos de parcelas."""
 import streamlit as st
+import pandas as pd
 from streamlit_folium import st_folium
 
 from src.geo.geodata_loader import load_client_geodataframe
@@ -149,6 +150,51 @@ def render_page_data_parcela(selected_client: str | None = None) -> None:
                          height=min(450, 40 + len(table_df) * 35), hide_index=True)
         except Exception as e:
             st.warning(f"No se pudo mostrar la tabla: {str(e)}")
+
+    # === ADVERTENCIAS DE CALIDAD — PENDIENTE EXTREMA SIGPAC ===
+    st.markdown("---")
+    st.markdown('<div class="section-title">⚠️ Advertencias de calidad del dato</div>',
+                unsafe_allow_html=True)
+    try:
+        # Resolver columna de pendiente disponible
+        slope_col = next((c for c in ["pendiente_pct", "pendiente_%", "pendiente_"]
+                          if c in display_gdf.columns), None)
+        if slope_col:
+            slope_data = display_gdf[["parcel_id", slope_col]].copy()
+            slope_data[slope_col] = pd.to_numeric(slope_data[slope_col], errors="coerce")
+
+            warnings = []
+            for _, r in slope_data.iterrows():
+                v = r[slope_col]
+                if pd.isna(v):
+                    continue
+                if v > 100:
+                    warnings.append({
+                        "Parcela": r["parcel_id"],
+                        "Pendiente (%)": f"{v:.0f}%",
+                        "Nivel": "ALERTA FUERTE",
+                        "Observación": "Valor superior a 100%. Revisar posible error SIGPAC o geometría.",
+                    })
+                elif v > 60:
+                    warnings.append({
+                        "Parcela": r["parcel_id"],
+                        "Pendiente (%)": f"{v:.0f}%",
+                        "Nivel": "ADVERTENCIA",
+                        "Observación": "Pendiente alta. Revisar si corresponde con la realidad del terreno.",
+                    })
+
+            if warnings:
+                st.markdown("**Pendiente extrema detectada en parcelas SIGPAC:**")
+                warn_df = pd.DataFrame(warnings)
+                st.dataframe(warn_df, use_container_width=True,
+                             height=min(200, 40 + len(warn_df) * 35), hide_index=True)
+                st.caption("Estas advertencias son informativas y no bloquean el flujo de trabajo.")
+            else:
+                st.success("No se detectaron pendientes extremas en las parcelas cargadas.")
+        else:
+            st.caption("No se encontró columna de pendiente en el shapefile.")
+    except Exception as e:
+        st.caption(f"No se pudo calcular advertencias de pendiente: {str(e)}")
 
     # === EDITOR DEL AGRICULTOR ===
     st.markdown("---")
