@@ -6,13 +6,18 @@ Estado B (con parcela): análisis completo 7-secciones + PDF de parcela.
 """
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 
 from src.features.llm_engine import (
     generate_general_analysis,
     generate_parcel_analysis,
     load_llm_output,
 )
-from src.features.pdf_generator import generate_pdf_report
+from src.features.pdf_generator import (
+    count_pdf_detail_blocks,
+    generate_pdf_report,
+    get_pdf_report_path,
+)
 
 
 def _fv(v, fmt=".2f", default="—"):
@@ -148,21 +153,21 @@ def _render_general_ia(selected_client: str, modeling_df: pd.DataFrame | None) -
         if st.button("📄 Generar y descargar PDF", use_container_width=True, key="btn_pdf_general"):
             with st.spinner("Generando informe PDF completo..."):
                 try:
-                    # Reunir análisis de parcelas prioritarias (top 5)
-                    llm_parcel_outputs = {}
-                    if "impacto_total_eur" in modeling_df.columns:
-                        top_pids = modeling_df.nlargest(5, "impacto_total_eur")["parcel_id"].astype(str).tolist()
-                        for pid in top_pids:
-                            parcel_out = load_llm_output(selected_client, pid)
-                            if parcel_out:
-                                llm_parcel_outputs[pid] = parcel_out
-
                     pdf_bytes = generate_pdf_report(
                         client_id=selected_client,
                         mode="general",
                         modeling_df=modeling_df,
                         llm_output=prev,
-                        llm_parcel_outputs=llm_parcel_outputs or None,
+                        llm_parcel_outputs=None,
+                        max_parcels=None,
+                    )
+                    detailed_count = count_pdf_detail_blocks(pdf_bytes, selected_client)
+                    expected_count = len(modeling_df)
+                    report_path = get_pdf_report_path(selected_client, mode="general")
+                    st.success(
+                        "PDF generado: "
+                        f"{report_path} | parcelas detalladas: {detailed_count}/{expected_count} | "
+                        f"tamaño bytes: {len(pdf_bytes)} | timestamp: {datetime.now().isoformat(timespec='seconds')}"
                     )
                     st.download_button(
                         label="⬇️ Descargar informe PDF",
@@ -180,7 +185,7 @@ def _render_general_ia(selected_client: str, modeling_df: pd.DataFrame | None) -
         st.caption(
             "El informe incluye: resumen ejecutivo, KPIs, distribución de riesgo, "
             "top parcelas, riesgos, recomendaciones, análisis detallado de parcelas "
-            "prioritarias y tabla completa de predicciones."
+            "del cliente y tabla completa de predicciones."
         )
 
 
