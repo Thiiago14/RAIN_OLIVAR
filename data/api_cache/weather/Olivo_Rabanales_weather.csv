@@ -1,0 +1,3 @@
+parcel_uid;parcel_id;client_id;lat;lon;rain_72h_mm;rain_7d_mm;temp_media_7d;humedad_suelo_%;weather_source;weather_updated_at;weather_status;weather_error
+geo_e66b8afa4f851d24;Olivo_Rabanales_P001;Olivo_Rabanales;37.93309707887389;-4.718101266828374;0.0;0.0;27.7;9.3;open-meteo;2026-06-06T10:39:34;ok;
+geo_f21a0d8e01ec65a6;Olivo_Rabanales_P002;Olivo_Rabanales;37.93514844895201;-4.716528430432763;0.0;0.0;27.8;9.3;open-meteo;2026-06-06T10:39:34;ok;

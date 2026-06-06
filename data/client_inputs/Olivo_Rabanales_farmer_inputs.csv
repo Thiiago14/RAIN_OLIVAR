@@ -1,0 +1,3 @@
+parcel_uid;parcel_id;client_id;uso_sigpac;tipo_olivar;riego;variedad;estado_fenologico;updated_at;completion_status
+geo_e66b8afa4f851d24;Olivo_Rabanales_P001;Olivo_Rabanales;;Intensivo;Secano;Arbequina;Floracion;2026-06-06T10:39:28;completo
+geo_f21a0d8e01ec65a6;Olivo_Rabanales_P002;Olivo_Rabanales;;Superintensivo;Secano;Cornicabra;Brotacion;2026-06-06T10:39:28;completo

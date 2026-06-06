@@ -1,0 +1,3 @@
+parcel_uid;parcel_id;client_id;lat;lon;distancia_rio_m;nearest_water_type;nearest_water_name;overpass_radius_m;hydrology_source;hydrology_updated_at;hydrology_status;hydrology_error
+geo_e66b8afa4f851d24;Olivo_Rabanales_P001;Olivo_Rabanales;37.93309707887389;-4.718101266828374;590;water;;5000;overpass-osm;2026-06-06T10:42:42;ok;
+geo_f21a0d8e01ec65a6;Olivo_Rabanales_P002;Olivo_Rabanales;37.93514844895201;-4.716528430432763;324;water;;5000;overpass-osm;2026-06-06T10:42:42;ok;
