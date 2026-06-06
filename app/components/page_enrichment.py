@@ -19,6 +19,7 @@ from src.features.waterlogging_calculator import get_waterlogging_risk_distribut
 from src.features.enrichment_assembler import (
     assemble_enriched_csv, get_enrichment_coverage,
     get_ml_readiness, get_ml_ready_csv, get_slope_warnings,
+    load_hms_sidecar, hms_sidecar_exists,
 )
 from src.features.build_input_from_parcels import build_base_input, to_csv_bytes
 from src.features.persistence import (
@@ -291,6 +292,20 @@ def render_page_enrichment(selected_client: str | None = None) -> None:
                     st.dataframe(disp_h, use_container_width=True, hide_index=True, height=260)
 
     # =========================================================================
+    # 3b. ESTACIÓN METEOROLÓGICA PROPIA + MODELO HMS
+    # =========================================================================
+    st.markdown("---")
+    st.markdown(
+        '<div class="section-title">📡 Estación meteorológica propia + Modelo hidrológico HMS</div>',
+        unsafe_allow_html=True,
+    )
+
+    if raw_status != "completo":
+        st.warning("⚠️ Confirma primero los datos del agricultor.")
+    else:
+        _render_estacion_hms_section(selected_client, ov_gdf)
+
+    # =========================================================================
     # 4. CSV CONSOLIDADO + ENCHARCAMIENTO + ECONÓMICO
     # =========================================================================
     if raw_status != "completo":
@@ -434,3 +449,192 @@ def render_page_enrichment(selected_client: str | None = None) -> None:
                 use_container_width=True,
             )
             st.caption(f"{len(enriched_df)} parcelas · 25 columnas · sep ;")
+
+
+# =========================================================================
+# Sección Estación Propia + HMS (función auxiliar)
+# =========================================================================
+
+def _render_estacion_hms_section(client_id: str, ov_gdf) -> None:
+    """Renderiza la UI de estación meteorológica propia y modelo HMS."""
+    from src.services.EstacionMeteorologica import EstacionMeteorologica
+    from src.services.ConstructorVariablesMeteo import ConstructorVariablesMeteo
+    from src.services.MeteoFallback import MeteoConFallback
+
+    # --- Estado de la estación ---
+    try:
+        estacion = EstacionMeteorologica(fuente="csv")
+        disponible = estacion.disponible()
+        estaciones = estacion.get_estaciones_disponibles()
+    except Exception as e:
+        st.error(f"Error conectando con estación meteorológica: {e}")
+        return
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        status_icon = "🟢" if disponible else "🔴"
+        st.metric("Estado estación", f"{status_icon} {'Online' if disponible else 'Offline'}")
+    with col2:
+        st.metric("Estaciones", len(estaciones), delta=estaciones[0] if estaciones else "—")
+    with col3:
+        st.metric("Fuente", "FIWARE IoT", delta="CSV público · ~15 min")
+
+    if not disponible:
+        st.info("La estación meteorológica no tiene datos recientes. Se usará Open-Meteo como fallback.")
+
+    # --- Variables meteorológicas con fallback ---
+    st.markdown("**Variables meteorológicas (estación propia + fallback Open-Meteo):**")
+
+    if st.button("📡 Consultar estación propia + fallback", key="btn_estacion_propia",
+                 use_container_width=True, type="primary"):
+        with st.spinner("Consultando estación meteorológica..."):
+            try:
+                # Usar centroide de la finca para fallback Open-Meteo
+                centroid_wgs84 = ov_gdf.to_crs("EPSG:4326").geometry.centroid.iloc[0]
+                lat, lon = centroid_wgs84.y, centroid_wgs84.x
+
+                wrapper = MeteoConFallback(estacion)
+                meteo, hms_vars, origen = wrapper.construir_variables_completas(lat=lat, lon=lon)
+
+                # Guardar en session_state para uso posterior
+                st.session_state[f"{client_id}_meteo_propia"] = meteo
+                st.session_state[f"{client_id}_hms_vars"] = hms_vars
+                st.session_state[f"{client_id}_origen_variables"] = origen
+                st.success("Variables meteorológicas obtenidas correctamente.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error consultando estación: {e}")
+
+    # Mostrar resultados si existen en session_state
+    meteo_key = f"{client_id}_meteo_propia"
+    origen_key = f"{client_id}_origen_variables"
+
+    if meteo_key in st.session_state:
+        meteo = st.session_state[meteo_key]
+        origen = st.session_state.get(origen_key, {})
+
+        # Tabla de variables con origen
+        vars_df = pd.DataFrame([
+            {"Variable": k, "Valor": v, "Fuente": origen.get(k, "—")}
+            for k, v in meteo.items()
+            if v is not None
+        ])
+        if not vars_df.empty:
+            st.dataframe(vars_df, use_container_width=True, hide_index=True, height=200)
+
+    # --- Modelo HMS ---
+    st.markdown("---")
+    st.markdown("**🌊 Modelo hidrológico HMS (lluvia → escorrentía → hidrograma):**")
+
+    hms_col1, hms_col2 = st.columns([1, 2])
+    with hms_col1:
+        uso_suelo = st.selectbox(
+            "Uso de suelo",
+            ["cultivos", "olivar", "bosque", "pasto", "barbecho"],
+            index=1,  # olivar por defecto
+            key=f"{client_id}_uso_suelo",
+        )
+        grupo_hidr = st.selectbox(
+            "Grupo hidrológico",
+            ["A", "B", "C", "D"],
+            index=1,  # B por defecto
+            key=f"{client_id}_grupo_hidr",
+        )
+
+    with hms_col2:
+        if st.button("🌊 Ejecutar modelo HMS", key="btn_hms",
+                     use_container_width=True, type="primary"):
+            with st.spinner("Ejecutando modelo hidrológico HMS..."):
+                try:
+                    from src.hms.ModeloHMS import FincaHMS
+                    import numpy as np
+
+                    # Buscar shapefile del cliente
+                    import glob
+                    shp_files = glob.glob(f"data/clientes_shp/{client_id}/**/*.shp", recursive=True)
+                    if not shp_files:
+                        st.error(f"No se encontró shapefile para {client_id}")
+                        return
+
+                    shp_path = shp_files[0]
+                    hms = FincaHMS(shp_path)
+
+                    # Intentar descargar DEM (puede tardar)
+                    try:
+                        hms.descargar_dem(output=f"{client_id}_dem.tif")
+                    except Exception:
+                        pass  # Continuar sin DEM
+
+                    # Parámetros morfométricos
+                    params = hms.calcular_parametros_morfometricos()
+
+                    # Obtener serie de lluvia
+                    hms_vars = st.session_state.get(f"{client_id}_hms_vars")
+                    if hms_vars and hms_vars.get("lluvia_serie_30min") is not None:
+                        lluvia = hms_vars["lluvia_serie_30min"]
+                        amc = hms_vars.get("amc_calculado", "II")
+                    else:
+                        # Fallback: serie sintética de prueba
+                        serie = estacion.get_serie_pluviometrica(intervalo_min=30)
+                        lluvia = serie.values if not serie.empty else np.zeros(48)
+                        amc = "II"
+
+                    # Calcular hidrograma
+                    t, Q, metadata = hms.calcular_hidrograma(
+                        lluvia, dt_h=0.5,
+                        uso_suelo=uso_suelo,
+                        grupo_hidrologico=grupo_hidr,
+                        AMC=amc,
+                    )
+
+                    # Guardar resultados
+                    metadata["params"] = params
+                    metadata["AMC"] = amc
+                    metadata["t_horas"] = t.tolist()
+                    metadata["Q_m3s"] = Q.tolist()
+                    st.session_state[f"{client_id}_hms_results"] = metadata
+                    st.success("Modelo HMS ejecutado correctamente.")
+                    st.rerun()
+
+                except Exception as e:
+                    st.error(f"Error ejecutando HMS: {e}")
+
+    # Mostrar resultados HMS si existen
+    hms_key = f"{client_id}_hms_results"
+    if hms_key in st.session_state:
+        hms_res = st.session_state[hms_key]
+
+        # KPIs
+        st.markdown("**Resultados del modelo HMS:**")
+        k1, k2, k3, k4 = st.columns(4)
+        with k1:
+            st.metric("CN (SCS)", hms_res.get("CN", "—"))
+        with k2:
+            st.metric("Caudal pico", f"{hms_res.get('caudal_pico_m3s', 0):.4f} m³/s")
+        with k3:
+            st.metric("Tiempo pico", f"{hms_res.get('tiempo_pico_h', 0):.2f} h")
+        with k4:
+            st.metric("Escorrentía", f"{hms_res.get('escorrentia_acumulada_mm', 0):.2f} mm")
+
+        # Parámetros morfométricos
+        params = hms_res.get("params", {})
+        if params:
+            with st.expander("📐 Parámetros morfométricos de la cuenca"):
+                p_cols = st.columns(4)
+                with p_cols[0]:
+                    st.metric("Área", f"{params.get('area_km2', 0):.3f} km²")
+                with p_cols[1]:
+                    st.metric("T. concentración", f"{params.get('Tc_horas', 0):.2f} h")
+                with p_cols[2]:
+                    st.metric("Pendiente media", f"{params.get('pendiente_media', 0):.3f}")
+                with p_cols[3]:
+                    st.metric("Compacidad (Kc)", f"{params.get('Kc', 0):.3f}")
+
+        # Gráfico del hidrograma
+        if "t_horas" in hms_res and "Q_m3s" in hms_res:
+            import numpy as np
+            chart_df = pd.DataFrame({
+                "Tiempo (h)": hms_res["t_horas"],
+                "Caudal (m³/s)": hms_res["Q_m3s"],
+            })
+            st.line_chart(chart_df.set_index("Tiempo (h)"), use_container_width=True)

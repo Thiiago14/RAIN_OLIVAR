@@ -255,3 +255,91 @@ def merge_weather_into_base(
             result[col] = result["parcel_id"].map(valid_weather[col])
 
     return result
+
+
+# =========================================================================
+# Estación meteorológica propia con fallback a Open-Meteo
+# =========================================================================
+
+def enrich_weather_from_estacion(
+    client_id: str,
+    ov_gdf: gpd.GeoDataFrame,
+    finca_id: str | None = None,
+    fuente: str = "csv",
+    max_workers: int = 5,
+    progress_callback=None,
+) -> tuple[pd.DataFrame, dict]:
+    """
+    Enriquecimiento meteorológico usando estación propia con fallback a Open-Meteo.
+    Misma interfaz que enrich_weather_for_client pero con trazabilidad de origen.
+
+    Args:
+        client_id: Identificador del cliente
+        ov_gdf: GeoDataFrame de parcelas OV
+        finca_id: gatewayOut de la estación (None = usar todas)
+        fuente: 'csv', 'postgres', 'api_rest'
+        max_workers: Workers paralelos para fallback Open-Meteo
+        progress_callback: Función de progreso(done, total)
+
+    Returns:
+        (weather_df, origen_variables): DataFrame cache + dict de trazabilidad
+    """
+    from src.services.EstacionMeteorologica import EstacionMeteorologica
+    from src.services.MeteoFallback import MeteoConFallback
+
+    required = {"parcel_uid", "parcel_id", "client_id", "lat", "lon"}
+    missing = required - set(ov_gdf.columns)
+    if missing:
+        raise ValueError(f"GeoDataFrame falta columnas: {missing}")
+
+    estacion = EstacionMeteorologica(fuente=fuente)
+    wrapper = MeteoConFallback(estacion, finca_id=finca_id)
+
+    all_rows = ov_gdf[list(required)].to_dict("records")
+    total = len(all_rows)
+    results = []
+
+    for i, row in enumerate(all_rows):
+        try:
+            meteo, _hms, origen = wrapper.construir_variables_completas(
+                lat=row["lat"], lon=row["lon"]
+            )
+            results.append({
+                "parcel_uid": row["parcel_uid"],
+                "parcel_id": row["parcel_id"],
+                "client_id": row["client_id"],
+                "lat": row["lat"],
+                "lon": row["lon"],
+                "rain_72h_mm": meteo.get("rain_72h_mm"),
+                "rain_7d_mm": meteo.get("rain_7d_mm"),
+                "temp_media_7d": meteo.get("temp_media_7d"),
+                "humedad_suelo_%": meteo.get("humedad_suelo_%"),
+                "weather_source": "estacion_propia+fallback",
+                "weather_updated_at": datetime.now().isoformat(timespec="seconds"),
+                "weather_status": "ok" if any(v is not None for v in meteo.values()) else "error",
+                "weather_error": "",
+            })
+        except Exception as exc:
+            results.append({
+                "parcel_uid": row["parcel_uid"],
+                "parcel_id": row["parcel_id"],
+                "client_id": row["client_id"],
+                "lat": row["lat"],
+                "lon": row["lon"],
+                "rain_72h_mm": None,
+                "rain_7d_mm": None,
+                "temp_media_7d": None,
+                "humedad_suelo_%": None,
+                "weather_source": "estacion_propia+fallback",
+                "weather_updated_at": datetime.now().isoformat(timespec="seconds"),
+                "weather_status": "error",
+                "weather_error": str(exc)[:200],
+            })
+
+        if progress_callback:
+            progress_callback(i + 1, total)
+
+    df_final = pd.DataFrame(results, columns=WEATHER_COLS)
+    save_weather_cache(client_id, df_final)
+
+    return df_final, dict(wrapper.origen_variables)

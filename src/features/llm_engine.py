@@ -53,7 +53,73 @@ def load_llm_output(client_id: str, parcel_id: str | None = None) -> dict | None
 # Análisis general (sin parcela)
 # ---------------------------------------------------------------------------
 
-def _build_general_context(client_id: str, modeling_df: pd.DataFrame) -> str:
+def _build_hms_context(hms_data: dict) -> str:
+    """
+    Construye sección textual de datos hidrológicos HMS para el prompt del LLM.
+    Solo se incluye si hay datos significativos.
+    """
+    if not hms_data:
+        return ""
+
+    caudal = hms_data.get("caudal_pico_m3s")
+    tiempo = hms_data.get("tiempo_pico_h")
+    escorrentia = hms_data.get("escorrentia_acumulada_mm")
+    cn = hms_data.get("CN")
+    amc = hms_data.get("AMC")
+    tc = hms_data.get("Tc_horas") or (hms_data.get("params", {}) or {}).get("Tc_horas")
+    eto = hms_data.get("eto_acumulada_7d") or hms_data.get("eto_penman_mm")
+    origen = hms_data.get("origen_variables", {})
+
+    # Solo generar sección si hay al menos caudal o escorrentía
+    if caudal is None and escorrentia is None:
+        return ""
+
+    lines = ["ANÁLISIS HIDROLÓGICO (Modelo HMS - SCS Curve Number):"]
+
+    if cn is not None:
+        lines.append(f"- Número de Curva SCS (CN): {cn}")
+    if amc:
+        amc_desc = {"I": "seco", "II": "normal", "III": "húmedo"}.get(amc, amc)
+        lines.append(f"- Condición de humedad antecedente: AMC-{amc} ({amc_desc})")
+    if tc is not None:
+        lines.append(f"- Tiempo de concentración: {tc:.2f} horas")
+    if escorrentia is not None:
+        lines.append(f"- Escorrentía acumulada del evento: {escorrentia:.2f} mm")
+    if caudal is not None:
+        lines.append(f"- Caudal pico estimado: {caudal:.4f} m³/s")
+    if tiempo is not None:
+        lines.append(f"- Tiempo al pico: {tiempo:.2f} horas")
+    if eto is not None:
+        lines.append(f"- Evapotranspiración de referencia (ETo): {eto:.2f} mm/día")
+
+    # Evaluación de riesgo hidrológico
+    if caudal is not None and escorrentia is not None:
+        if caudal > 0.1 or escorrentia > 20:
+            lines.append("")
+            lines.append(
+                "⚠️ RIESGO HIDROLÓGICO ELEVADO: El caudal pico y la escorrentía "
+                "indican riesgo de erosión y posible inundación en zonas bajas. "
+                "Se recomienda revisar infraestructuras de drenaje y protección de suelo."
+            )
+        elif caudal > 0.01 or escorrentia > 5:
+            lines.append("")
+            lines.append(
+                "⚡ RIESGO HIDROLÓGICO MODERADO: Escorrentía significativa que puede "
+                "generar erosión superficial. Considerar cubiertas vegetales en parcelas "
+                "con pendiente elevada."
+            )
+
+    if origen:
+        lines.append("")
+        lines.append(f"Fuentes de datos meteorológicos: {json.dumps(origen, ensure_ascii=False)}")
+
+    return "\n".join(lines)
+
+def _build_general_context(
+    client_id: str,
+    modeling_df: pd.DataFrame,
+    hms_data: dict | None = None,
+) -> str:
     """Construye contexto textual para el análisis general."""
     n = len(modeling_df)
     if n == 0:
@@ -98,15 +164,31 @@ CONDICIONES CLIMÁTICAS Y EDÁFICAS (promedios):
 TOP 3 PARCELAS POR IMPACTO ECONÓMICO:
 {json.dumps(top3, indent=2, ensure_ascii=False)}
 """.strip()
+
+    # Inyectar datos HMS si están disponibles
+    if hms_data:
+        hms_section = _build_hms_context(hms_data)
+        if hms_section:
+            ctx += f"\n\n{hms_section}"
+
     return ctx
 
 
-def generate_general_analysis(client_id: str, modeling_df: pd.DataFrame) -> dict:
+def generate_general_analysis(
+    client_id: str,
+    modeling_df: pd.DataFrame,
+    hms_data: dict | None = None,
+) -> dict:
     """
     Genera análisis agronómico general para el cliente.
     Si no hay API key, usa análisis basado en reglas.
+
+    Args:
+        client_id: identificador del cliente
+        modeling_df: DataFrame con predicciones
+        hms_data: dict opcional con resultados HMS (caudal_pico, escorrentía, etc.)
     """
-    ctx = _build_general_context(client_id, modeling_df)
+    ctx = _build_general_context(client_id, modeling_df, hms_data)
     client = _get_client()
 
     if client:
@@ -247,12 +329,25 @@ def _rule_based_general_analysis(df: pd.DataFrame, error: str = None) -> dict:
 # Análisis por parcela
 # ---------------------------------------------------------------------------
 
-def generate_parcel_analysis(client_id: str, parcel_id: str, parcel_data: dict) -> dict:
+def generate_parcel_analysis(
+    client_id: str,
+    parcel_id: str,
+    parcel_data: dict,
+    hms_data: dict | None = None,
+) -> dict:
     """
     Genera análisis agronómico para una parcela individual.
     Si no hay API key, usa análisis basado en reglas.
+
+    Args:
+        hms_data: dict opcional con resultados HMS para esta parcela
     """
     client = _get_client()
+
+    # Inyectar datos HMS al contexto de la parcela
+    if hms_data:
+        parcel_data = {**parcel_data, "_hms": hms_data}
+
     ctx = json.dumps(parcel_data, ensure_ascii=False, indent=2)
 
     if client:

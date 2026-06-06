@@ -33,6 +33,7 @@ def assemble_enriched_csv(
     weather_df: pd.DataFrame | None = None,
     soil_df: pd.DataFrame | None = None,
     hydrology_df: pd.DataFrame | None = None,
+    hms_results: dict | None = None,
 ) -> pd.DataFrame:
     """
     Genera y guarda el CSV consolidado del cliente.
@@ -91,6 +92,11 @@ def assemble_enriched_csv(
     os.makedirs(ENRICHED_DIR, exist_ok=True)
     path = os.path.join(ENRICHED_DIR, f"{client_id}_input_enriched.csv")
     df.to_csv(path, index=False, sep=";")
+
+    # 9. Sidecar HMS: guardar features hidrológicas en CSV separado (NO entran al ML)
+    if hms_results:
+        _save_hms_sidecar(client_id, df, hms_results)
+
     return df
 
 
@@ -229,3 +235,72 @@ def load_enriched_csv(client_id: str) -> pd.DataFrame | None:
         return pd.read_csv(path, sep=";")
     except Exception:
         return None
+
+
+# =========================================================================
+# HMS Sidecar: features hidrológicas (NO entran al modelo ML)
+# =========================================================================
+
+HMS_COLS = ["parcel_id", "caudal_pico_m3s", "tiempo_pico_h", "escorrentia_acumulada_mm"]
+
+
+def _save_hms_sidecar(
+    client_id: str,
+    enriched_df: pd.DataFrame,
+    hms_results: dict,
+) -> str | None:
+    """
+    Guarda features HMS en CSV sidecar separado.
+    Estos datos se inyectan al prompt del LLM pero NO al modelo ML.
+
+    Args:
+        client_id: identificador del cliente
+        enriched_df: DataFrame con parcel_id
+        hms_results: dict con {caudal_pico_m3s, tiempo_pico_h, escorrentia_acumulada_mm}
+                     o dict con resultados por parcela
+    """
+    os.makedirs(ENRICHED_DIR, exist_ok=True)
+    path = os.path.join(ENRICHED_DIR, f"{client_id}_hms_features.csv")
+
+    rows = []
+    for _, row in enriched_df.iterrows():
+        parcel_id = row.get("parcel_id")
+        if parcel_id is None:
+            continue
+
+        # hms_results puede ser un dict global o por parcela
+        if "parcelas" in hms_results and parcel_id in hms_results["parcelas"]:
+            hms = hms_results["parcelas"][parcel_id]
+        else:
+            hms = hms_results
+
+        rows.append({
+            "parcel_id": parcel_id,
+            "caudal_pico_m3s": hms.get("caudal_pico_m3s"),
+            "tiempo_pico_h": hms.get("tiempo_pico_h"),
+            "escorrentia_acumulada_mm": hms.get("escorrentia_acumulada_mm"),
+        })
+
+    if not rows:
+        return None
+
+    df_hms = pd.DataFrame(rows, columns=HMS_COLS)
+    df_hms.to_csv(path, index=False, sep=";")
+    return path
+
+
+def load_hms_sidecar(client_id: str) -> pd.DataFrame | None:
+    """Carga el CSV sidecar de features HMS si existe."""
+    path = os.path.join(ENRICHED_DIR, f"{client_id}_hms_features.csv")
+    if not os.path.exists(path):
+        return None
+    try:
+        return pd.read_csv(path, sep=";")
+    except Exception:
+        return None
+
+
+def hms_sidecar_exists(client_id: str) -> bool:
+    """Verifica si existe el sidecar HMS para un cliente."""
+    path = os.path.join(ENRICHED_DIR, f"{client_id}_hms_features.csv")
+    return os.path.exists(path)
